@@ -60,7 +60,6 @@ jobs:
         cache-to: type=gha,mode=max
 
   deploy-dev:
-    name: Deploy
     needs: [ test, build, docker ]
     runs-on: ubuntu-latest
     steps:
@@ -77,6 +76,6 @@ jobs:
         with:
           namespace: default
           manifests: |
-            kubernetes/cert-webhook-go.yaml
+            kubernetes/deployment.yaml
           images: |
             anyrobli/waf-webhook:${{ github.sha }}
