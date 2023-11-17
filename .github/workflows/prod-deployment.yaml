@@ -1,0 +1,18 @@
+name: update deployment image on prod cluster
+on:
+  workflow_dispatch:
+jobs:
+  deploy-prod:
+    needs: [ docker ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Deploy to the Kubernetes cluster
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }} # this has to point to a prod cluster config later
+        with:
+          args: set image deployment/waf-webhook server=anyrobli/waf-webhook:${{ github.sha }}
+
+
