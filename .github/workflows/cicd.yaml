@@ -61,7 +61,7 @@ jobs:
 
   deploy-dev:
     name: Deploy
-    needs: [ test, build ]
+    needs: [ test, build, docker ]
     runs-on: ubuntu-latest
     steps:
       - name: Set the Kubernetes context
