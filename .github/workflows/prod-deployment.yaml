@@ -1,4 +1,4 @@
-name: update deployment image on prod cluster
+name: deploy-prod
 on:
   workflow_dispatch:
 jobs:
