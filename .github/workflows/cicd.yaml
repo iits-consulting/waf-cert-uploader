@@ -59,23 +59,38 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  deploy-dev:
-    needs: [ test, build, docker ]
+#  deploy-dev:
+#    needs: [ test, build, docker ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Set the Kubernetes context
+#        uses: azure/k8s-set-context@v2
+#        with:
+#          method: service-account
+#          k8s-url: https://80.158.20.45:5443
+#          k8s-secret: ${{ secrets.KUBERNETES_SECRET }}
+#      - name: Checkout source code
+#        uses: actions/checkout@v3
+#      - name: Deploy to the Kubernetes cluster
+#        uses: azure/k8s-deploy@v1
+#        with:
+#          namespace: default
+#          manifests: |
+#            kubernetes/deployment.yaml
+#          images: |
+#            anyrobli/waf-webhook:${{ github.sha }}
+
+  deploy-test:
+    needs: [ docker ]
     runs-on: ubuntu-latest
     steps:
-      - name: Set the Kubernetes context
-        uses: azure/k8s-set-context@v2
-        with:
-          method: service-account
-          k8s-url: https://80.158.20.45:5443
-          k8s-secret: ${{ secrets.KUBERNETES_SECRET }}
       - name: Checkout source code
         uses: actions/checkout@v3
       - name: Deploy to the Kubernetes cluster
-        uses: azure/k8s-deploy@v1
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          namespace: default
-          manifests: |
-            kubernetes/deployment.yaml
-          images: |
-            anyrobli/waf-webhook:${{ github.sha }}
+          args: set image deployment/cert-webhook-go server=anyrobli/waf-webhook:${{ github.sha }}
+
+
