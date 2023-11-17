@@ -12,20 +12,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.20'
-
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
-      
-  docker:
+  test:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+      - name: Test
+        run: go test -v ./...
+
+  docker:
+    needs: test
     runs-on: ubuntu-latest
     steps:
     -
@@ -46,4 +53,30 @@ jobs:
       with:
         platforms: linux/amd64
         push: true
-        tags: anyrobli/waf-webhook:latest
+        tags: |
+          anyrobli/waf-webhook:${{ github.sha }}
+          anyrobli/waf-webhook:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-dev:
+    name: Deploy
+    needs: [ test, build ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set the Kubernetes context
+        uses: azure/k8s-set-context@v2
+        with:
+          method: service-account
+          k8s-url: https://80.158.20.45:5443
+          k8s-secret: ${{ secrets.KUBERNETES_SECRET }}
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Deploy to the Kubernetes cluster
+        uses: azure/k8s-deploy@v1
+        with:
+          namespace: default
+          manifests: |
+            kubernetes/cert-webhook-go.yaml
+          images: |
+            anyrobli/waf-webhook:${{ github.sha }}
