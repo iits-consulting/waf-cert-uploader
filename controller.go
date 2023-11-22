@@ -49,6 +49,10 @@ func HandleMutate(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseBytes)
 }
 
+func HandleUploadCertToWaf(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func deserializeToAdmissionReview(w http.ResponseWriter, body []byte) v1.AdmissionReview {
 	var admissionReviewReq v1.AdmissionReview
 

@@ -14,9 +14,10 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"waf-webhook/internal"
 )
 
-var config *rest.Config
+// var config *rest.Config
 var clientSet *kubernetes.Clientset
 
 type ServerParameters struct {
@@ -32,18 +33,21 @@ var (
 )
 
 func main() {
+	logger := internal.NewLogger("INFO")
+	createOtcClient(logger)
 
 	flag.IntVar(&parameters.port, "port", 8443, "Webhook server port.")
 	flag.StringVar(&parameters.certFile, "tlsCertFile", "/etc/webhook/certs/tls.crt", "File containing the x509 Certificate for HTTPS.")
 	flag.StringVar(&parameters.keyFile, "tlsKeyFile", "/etc/webhook/certs/tls.key", "File containing the x509 private key to --tlsCertFile.")
 	flag.Parse()
 
-	config := getKubeConfig()
-	clientSet := getClientSet(config)
+	kubeConfig := getKubeConfig()
+	kubeClientSet := getClientSet(kubeConfig)
 
-	test(clientSet)
+	test(kubeClientSet)
 	http.HandleFunc("/", HandleRoot)
 	http.HandleFunc("/mutate", HandleMutate)
+	http.HandleFunc("/upload-cert-to-waf", HandleUploadCertToWaf)
 	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(parameters.port), parameters.certFile, parameters.keyFile, nil))
 }
 
@@ -89,4 +93,30 @@ func getKubeConfig() *rest.Config {
 		config = c
 	}
 	return config
+}
+
+func createOtcClient(logger internal.ILogger) *internal.OtcWrapper {
+	config := internal.ConfigStruct{
+		AuthenticationData: internal.AuthenticationData{
+			Username:             "",
+			Password:             "",
+			AccessKey:            "",
+			SecretKey:            "",
+			IsAkSkAuthentication: false,
+			ProjectId:            "",
+			DomainName:           "",
+			Region:               "",
+		},
+		Namespaces:                nil,
+		Port:                      0,
+		WaitDuration:              0,
+		ResourceIdNameMappingFlag: false,
+	}
+	client, err := internal.NewOtcClientFromConfig(config, logger)
+	if err != nil {
+		logger.Panic("Error creating OTC client", "error", err)
+	}
+
+	logger.Info("New OTC Client created!")
+	return client
 }
