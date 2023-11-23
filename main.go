@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -32,7 +34,7 @@ var (
 )
 
 func main() {
-	//logger := internal.NewLogger("INFO")
+	logger := internal.NewLogger("INFO")
 
 	flag.IntVar(&parameters.port, "port", 8443, "Webhook server port.")
 	flag.StringVar(&parameters.certFile, "tlsCertFile", "/etc/webhook/certs/tls.crt", "File containing the x509 Certificate for HTTPS.")
@@ -42,9 +44,8 @@ func main() {
 	kubeConfig := getKubeConfig()
 	kubeClientSet := getClientSet(kubeConfig)
 
-	//createOtcClient(logger, kubeClientSet)
+	createOtcClient(logger, kubeClientSet)
 
-	test(kubeClientSet)
 	http.HandleFunc("/", HandleRoot)
 	http.HandleFunc("/mutate", HandleMutate)
 	http.HandleFunc("/upload-cert-to-waf", HandleUploadCertToWaf)
@@ -95,8 +96,12 @@ func getKubeConfig() *rest.Config {
 	return config
 }
 
-func createOtcClient(logger internal.ILogger, clientSet *kubernetes.Clientset) *internal.OtcWrapper {
+func createOtcClient(logger internal.ILogger, clientSet *kubernetes.Clientset) *golangsdk.ProviderClient {
 	secret, err := clientSet.CoreV1().Secrets("default").Get(context.TODO(), "otc-credentials", metav1.GetOptions{})
+
+	if err != nil {
+		panic(err.Error())
+	}
 
 	otcRegion, err := internal.NewOtcRegionFromString(string(secret.Data["region"]))
 
@@ -104,27 +109,20 @@ func createOtcClient(logger internal.ILogger, clientSet *kubernetes.Clientset) *
 		panic(err.Error())
 	}
 
-	config := internal.ConfigStruct{
-		AuthenticationData: internal.AuthenticationData{
-			Username:             "",
-			Password:             "",
-			AccessKey:            string(secret.Data["accessKey"]),
-			SecretKey:            string(secret.Data["secretKey"]),
-			IsAkSkAuthentication: true,
-			ProjectId:            string(secret.Data["projectId"]),
-			DomainName:           string(secret.Data["osDomainName"]),
-			Region:               otcRegion,
-		},
-		Namespaces:                nil,
-		Port:                      0,
-		WaitDuration:              0,
-		ResourceIdNameMappingFlag: false,
+	authData := internal.AuthenticationData{
+		AccessKey:   string(secret.Data["accessKey"]),
+		SecretKey:   string(secret.Data["secretKey"]),
+		ProjectName: string(secret.Data["projectName"]),
+		DomainName:  string(secret.Data["osDomainName"]),
+		Region:      otcRegion,
 	}
-	client, err := internal.NewOtcClientFromConfig(config, logger)
+
+	var opts = authData.ToOtcGopherAuthOptionsProvider()
+	provider, err := openstack.AuthenticatedClient(opts)
 	if err != nil {
 		logger.Panic("Error creating OTC client", "error", err)
 	}
 
 	logger.Info("New OTC Client created!")
-	return client
+	return provider
 }
