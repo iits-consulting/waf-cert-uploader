@@ -1,6 +1,6 @@
 module waf-webhook
 
-go 1.20
+go 1.21
 
 require (
 	github.com/opentelekomcloud/gophertelekomcloud v0.8.0

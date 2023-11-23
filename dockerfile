@@ -1,11 +1,11 @@
-FROM golang:1.20
+FROM golang:1.21
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY go.* ./
 RUN go mod download
 
-COPY *.go ./
+COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /waf-webhook
 
