@@ -18,7 +18,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"waf-webhook/internal"
 )
 
 type ServerParameters struct {
@@ -28,14 +27,13 @@ type ServerParameters struct {
 }
 
 var parameters ServerParameters
+var wafClient *golangsdk.ServiceClient
 
 var (
 	universalDeserializer = serializer.NewCodecFactory(runtime.NewScheme()).UniversalDeserializer()
 )
 
 func main() {
-	logger := internal.NewLogger("INFO")
-
 	flag.IntVar(&parameters.port, "port", 8443, "Webhook server port.")
 	flag.StringVar(&parameters.certFile, "tlsCertFile", "/etc/webhook/certs/tls.crt", "File containing the x509 Certificate for HTTPS.")
 	flag.StringVar(&parameters.keyFile, "tlsKeyFile", "/etc/webhook/certs/tls.key", "File containing the x509 private key to --tlsCertFile.")
@@ -44,10 +42,9 @@ func main() {
 	kubeConfig := getKubeConfig()
 	kubeClientSet := getClientSet(kubeConfig)
 
-	createOtcClient(logger, kubeClientSet)
+	createWafServiceClient(kubeClientSet)
 
 	http.HandleFunc("/", HandleRoot)
-	http.HandleFunc("/mutate", HandleMutate)
 	http.HandleFunc("/upload-cert-to-waf", HandleUploadCertToWaf)
 	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(parameters.port), parameters.certFile, parameters.keyFile, nil))
 }
@@ -96,33 +93,35 @@ func getKubeConfig() *rest.Config {
 	return config
 }
 
-func createOtcClient(logger internal.ILogger, clientSet *kubernetes.Clientset) *golangsdk.ProviderClient {
+func createWafServiceClient(clientSet *kubernetes.Clientset) *golangsdk.ServiceClient {
 	secret, err := clientSet.CoreV1().Secrets("default").Get(context.TODO(), "otc-credentials", metav1.GetOptions{})
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	otcRegion, err := internal.NewOtcRegionFromString(string(secret.Data["region"]))
+	authOpts := golangsdk.AuthOptions{
+		IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
+		Username:         string(secret.Data["username"]),
+		Password:         string(secret.Data["password"]),
+		DomainID:         string(secret.Data["domainID"]),
+		TenantID:         string(secret.Data["tenantID"]),
+		AllowReauth:      true,
+	}
+
+	provider, err := openstack.AuthenticatedClient(authOpts)
+	if err != nil {
+		log.Fatal("error creating otc client", err)
+	}
+
+	log.Println("new otc client created successfully!")
+
+	opts := golangsdk.EndpointOpts{Region: "eu-de"}
+	wafClient, err = openstack.NewWAFV1(provider, opts)
 
 	if err != nil {
-		panic(err.Error())
+		log.Fatal("error creating waf service client", err)
 	}
-
-	authData := internal.AuthenticationData{
-		AccessKey:   string(secret.Data["accessKey"]),
-		SecretKey:   string(secret.Data["secretKey"]),
-		ProjectName: string(secret.Data["projectName"]),
-		DomainName:  string(secret.Data["osDomainName"]),
-		Region:      otcRegion,
-	}
-
-	var opts = authData.ToOtcGopherAuthOptionsProvider()
-	provider, err := openstack.AuthenticatedClient(opts)
-	if err != nil {
-		logger.Panic("Error creating OTC client", "error", err)
-	}
-
-	logger.Info("New OTC Client created!")
-	return provider
+	log.Println("new waf client created successfully!")
+	return wafClient
 }
