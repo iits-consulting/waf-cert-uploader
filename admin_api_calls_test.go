@@ -6,6 +6,7 @@ import (
 	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
 	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
+	"github.com/thoas/go-funk"
 	"os"
 	"strings"
 	"testing"
@@ -88,14 +89,22 @@ func Test_ListCertificates(t *testing.T) {
 	fmt.Println("certificate list:\n" + strings.Join(certList, "\n"))
 }
 
-func Test_DeleteCertificate(t *testing.T) {
-	deleteResult := waf.Delete(wafClientTest, "1e9e8e1125204e4c916c1d2649b2760b")
-
-	extracted, err := deleteResult.Extract()
-
-	if err != nil {
-		fmt.Println(extracted.ErrorMsg)
-		panic(err.Error())
+func Test_DeleteCertificates(t *testing.T) {
+	idsToDelete := []string{
+		"ef7536170a024b39a232eb52137b5179",
 	}
-	fmt.Println("certificate deleted successfully")
+
+	funk.ForEach(idsToDelete, func(id string) {
+		deleteResult := waf.Delete(wafClientTest, id)
+
+		extracted, err := deleteResult.Extract()
+
+		if err != nil {
+			fmt.Println(extracted.ErrorMsg)
+			panic(err.Error())
+		}
+
+		fmt.Println("certificate deleted successfully")
+	})
+
 }

@@ -26,9 +26,19 @@ func HandleUploadCertToWaf(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("error while reading admission request body", err)
 	}
 
+	log.Println("received admission review")
+
 	admissionReviewReq := deserializeToAdmissionReview(w, body)
 
-	log.Println("received admission review")
+	log.Printf("Kind: %v \t RequestKind: %v \t Name: %v \t Operation: %v \t UID: %v \t UserInfo: %v \t APIVersion: %v \n",
+		admissionReviewReq.Request.Kind,
+		admissionReviewReq.Request.RequestKind,
+		admissionReviewReq.Request.Name,
+		admissionReviewReq.Request.Operation,
+		admissionReviewReq.Request.UID,
+		admissionReviewReq.Request.UserInfo,
+		admissionReviewReq.APIVersion,
+	)
 	log.Println(string(admissionReviewReq.Request.Object.Raw))
 
 	var secret apiv1.Secret
@@ -37,11 +47,19 @@ func HandleUploadCertToWaf(w http.ResponseWriter, r *http.Request) {
 
 	certId := CreateOrUpdateCertificate(secret)
 
-	patchBytes := createIdPatch(secret, certId)
+	var responseBytes []byte
 
-	responseBytes := createAdmissionResponse(admissionReviewReq, patchBytes, err)
+	if certId == "0" {
+		responseBytes = createRejectAdmissionResponse(admissionReviewReq, err)
+	} else {
+		patchBytes := createIdPatch(secret, certId)
+		responseBytes = createAdmissionResponse(admissionReviewReq, patchBytes, err)
+	}
 
-	w.Write(responseBytes)
+	_, err = w.Write(responseBytes)
+	if err != nil {
+		log.Fatal("http reply failed", err)
+	}
 }
 
 func deserializeToAdmissionReview(w http.ResponseWriter, body []byte) v1.AdmissionReview {
@@ -55,22 +73,14 @@ func deserializeToAdmissionReview(w http.ResponseWriter, body []byte) v1.Admissi
 		log.Fatal("malformed admission review: request is nil")
 	}
 
-	log.Printf("Type: %v \t Event: %v \t Name: %v \t RequestKind: %v \t UID: %v \t UserInfo: %v \n",
-		admissionReviewReq.Request.Kind,
-		admissionReviewReq.Request.Operation,
-		admissionReviewReq.Request.Name,
-		admissionReviewReq.Request.RequestKind,
-		admissionReviewReq.Request.UID,
-		admissionReviewReq.Request.UserInfo,
-	)
 	return admissionReviewReq
 }
 
 func createAdmissionResponse(admissionReviewReq v1.AdmissionReview, patchBytes []byte, err error) []byte {
 	admissionReviewResponse := v1.AdmissionReview{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "admission.k8s.io/v1",
-			Kind:       "AdmissionReview",
+			APIVersion: admissionReviewReq.APIVersion,
+			Kind:       admissionReviewReq.Kind,
 		},
 		Response: &v1.AdmissionResponse{
 			UID:     admissionReviewReq.Request.UID,
@@ -79,6 +89,27 @@ func createAdmissionResponse(admissionReviewReq v1.AdmissionReview, patchBytes [
 	}
 
 	applyPatchesToAdmissionResponse(admissionReviewResponse, patchBytes)
+
+	bytes, err := json.MarshalIndent(&admissionReviewResponse, "", "    ")
+	if err != nil {
+		log.Fatal("marshaling admission response failed", err)
+	}
+
+	log.Println(string(bytes))
+	return bytes
+}
+
+func createRejectAdmissionResponse(admissionReviewReq v1.AdmissionReview, err error) []byte {
+	admissionReviewResponse := v1.AdmissionReview{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: admissionReviewReq.APIVersion,
+			Kind:       admissionReviewReq.Kind,
+		},
+		Response: &v1.AdmissionResponse{
+			UID:     admissionReviewReq.Request.UID,
+			Allowed: false,
+		},
+	}
 
 	bytes, err := json.MarshalIndent(&admissionReviewResponse, "", "    ")
 	if err != nil {
