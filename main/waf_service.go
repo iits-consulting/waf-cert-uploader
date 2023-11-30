@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
+	"github.com/opentelekomcloud/gophertelekomcloud/pagination"
 	apiv1 "k8s.io/api/core/v1"
 	"log"
 	"regexp"
@@ -14,8 +16,36 @@ type CertificateSecret struct {
 	certWafId string
 }
 
+var wafCreate = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (r waf.CreateResult) {
+	return waf.Create(c, opts)
+}
+
+var wafDelete = func(c *golangsdk.ServiceClient, id string) (r waf.DeleteResult) {
+	return waf.Delete(c, id)
+}
+
+var createExtract = func(createResult waf.CreateResult) (*waf.Certificate, error) {
+	return createResult.Extract()
+}
+
+var deleteExtract = func(deleteResult waf.DeleteResult) (*golangsdk.ErrRespond, error) {
+	return deleteResult.Extract()
+}
+
+var wafList = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) (p pagination.Pager) {
+	return waf.List(c, opts)
+}
+
+var allPages = func(p pagination.Pager) (pagination.Page, error) {
+	return p.AllPages()
+}
+
+var wafExtractCertificates = func(p pagination.Page) ([]waf.Certificate, error) {
+	return waf.ExtractCertificates(p)
+}
+
 func CreateOrUpdateCertificate(secret apiv1.Secret) string {
-	certSecret := getSecret(secret)
+	certSecret := getCertificateSecret(secret)
 	var certId string
 	if len(certSecret.certWafId) == 0 {
 		log.Println("no certificate has been uploaded to the waf yet...")
@@ -32,11 +62,11 @@ func CreateOrUpdateCertificate(secret apiv1.Secret) string {
 
 func findCertIdRelatedToCurrentResourceVersion(secret apiv1.Secret) string {
 	log.Println("find certificate id related to current resource version " + secret.ResourceVersion + "...")
-	certList, err := waf.List(wafClient, waf.ListOpts{}).AllPages()
+	certList, err := allPages(wafList(wafClient, waf.ListOpts{}))
 	if err != nil {
 		log.Fatal(err)
 	}
-	extracted, err := waf.ExtractCertificates(certList)
+	extracted, err := wafExtractCertificates(certList)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,8 +90,8 @@ func uploadNewCertificate(secret apiv1.Secret, certSecret CertificateSecret) str
 		Key:     certSecret.tlsKey,
 	}
 
-	createResult := waf.Create(wafClient, createOpts)
-	certificate, err := createResult.Extract()
+	createResult := wafCreate(wafClient, createOpts)
+	certificate, err := createExtract(createResult)
 	if err != nil {
 		log.Println(err)
 		return "0"
@@ -73,9 +103,9 @@ func uploadNewCertificate(secret apiv1.Secret, certSecret CertificateSecret) str
 
 func updateExistingCertificate(secret apiv1.Secret, certSecret CertificateSecret) string {
 	log.Println("trying to delete expired certificate with id " + certSecret.certWafId)
-	deleteResult := waf.Delete(wafClient, certSecret.certWafId)
+	deleteResult := wafDelete(wafClient, certSecret.certWafId)
 
-	_, err := deleteResult.Extract()
+	_, err := deleteExtract(deleteResult)
 
 	if err != nil {
 		// we can't panic here because the endpoint is non-blocking and needs to be idempotent.
@@ -88,7 +118,7 @@ func updateExistingCertificate(secret apiv1.Secret, certSecret CertificateSecret
 	return "0"
 }
 
-func getSecret(secret apiv1.Secret) CertificateSecret {
+func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
 	tlsCertificate := string(secret.Data["tls.crt"])
 	tlsKey := string(secret.Data["tls.key"])
 	certWafId := secret.Labels["cert-waf-id"]
