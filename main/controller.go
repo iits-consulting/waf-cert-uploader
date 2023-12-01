@@ -45,14 +45,14 @@ func HandleUploadCertToWaf(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(admissionReviewReq.Request.Object.Raw, &secret)
 
-	certId := CreateOrUpdateCertificate(secret)
+	certId, err := CreateOrUpdateCertificate(secret)
 
 	var responseBytes []byte
 
-	if certId == "0" {
+	if err != nil {
 		responseBytes = createRejectAdmissionResponse(admissionReviewReq, err)
 	} else {
-		patchBytes := createIdPatch(secret, certId)
+		patchBytes := createIdPatch(secret, *certId)
 		responseBytes = createAdmissionResponse(admissionReviewReq, patchBytes, err)
 	}
 
@@ -107,7 +107,7 @@ func createRejectAdmissionResponse(admissionReviewReq v1.AdmissionReview, err er
 		},
 		Response: &v1.AdmissionResponse{
 			UID:     admissionReviewReq.Request.UID,
-			Allowed: true,
+			Allowed: false,
 		},
 	}
 
