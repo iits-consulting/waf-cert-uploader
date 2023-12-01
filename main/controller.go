@@ -107,7 +107,7 @@ func createRejectAdmissionResponse(admissionReviewReq v1.AdmissionReview, err er
 		},
 		Response: &v1.AdmissionResponse{
 			UID:     admissionReviewReq.Request.UID,
-			Allowed: false,
+			Allowed: true,
 		},
 	}
 
