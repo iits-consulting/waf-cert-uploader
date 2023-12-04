@@ -142,18 +142,17 @@ func uploadNewCertificate(certSecret CertificateSecret) (*string, error) {
 }
 
 func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
-	tlsCertificate := string(secret.Data["tls.crt"])
-	tlsKey := string(secret.Data["tls.key"])
+	tlsCertificateBase64 := secret.Data["tls.crt"]
+	tlsKeyBase64 := secret.Data["tls.key"]
+
 	certWafId := secret.Labels["cert-waf-id"]
 	wafDomainId := secret.Labels["waf-domain-id"]
 
-	regex := regexp.MustCompile(`\r?\n`)
-	tlsCertificate = regex.ReplaceAllString(tlsCertificate, "")
-	tlsKey = regex.ReplaceAllString(tlsKey, "")
+	//newline must be removed, else waf api fails
+	tlsCertificate := getStringWithoutNewline(string(tlsCertificateBase64))
+	tlsKey := getStringWithoutNewline(string(tlsKeyBase64))
 
-	certHash := sha256.New()
-	certHash.Write([]byte(tlsCertificate))
-	certHashString := hex.EncodeToString(certHash.Sum(nil))
+	certHashString := getCertificateHash(tlsCertificateBase64)
 
 	return CertificateSecret{
 		certName:    certHashString,
@@ -163,4 +162,16 @@ func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
 		certWafId:   certWafId,
 		wafDomainId: wafDomainId,
 	}
+}
+
+func getCertificateHash(tlsCertificateBase64 []byte) string {
+	certHash := sha256.New()
+	certHash.Write(tlsCertificateBase64)
+	certHashString := hex.EncodeToString(certHash.Sum(nil))
+	return certHashString
+}
+
+func getStringWithoutNewline(stringWithNewline string) string {
+	regex := regexp.MustCompile(`\r?\n`)
+	return regex.ReplaceAllString(stringWithNewline, "")
 }

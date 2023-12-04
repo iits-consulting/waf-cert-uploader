@@ -16,10 +16,6 @@ type patchOperation struct {
 	Value interface{} `json:"value,omitempty"`
 }
 
-func HandleRoot(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("HandleRoot!"))
-}
-
 func HandleUploadCertToWaf(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
