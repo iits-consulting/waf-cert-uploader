@@ -42,7 +42,8 @@ func main() {
 	setupOtcClient(kubeClientSet)
 
 	http.HandleFunc("/upload-cert-to-waf", HandleUploadCertToWaf)
-	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(parameters.port), parameters.certFile, parameters.keyFile, nil))
+	addr := ":" + strconv.Itoa(parameters.port)
+	log.Fatal(http.ListenAndServeTLS(addr, parameters.certFile, parameters.keyFile, nil))
 }
 
 func getClientSet(config *rest.Config) *kubernetes.Clientset {
@@ -86,7 +87,7 @@ func getLocalKubeConfig(kubeConfigFilePath string) *rest.Config {
 }
 
 func setupOtcClient(clientSet *kubernetes.Clientset) {
-	secret := getKubernetesSecrets(clientSet)
+	secret := getOtcCredentials(clientSet)
 	authOpts := getAuthOptions(secret)
 	provider := createProviderClient(authOpts)
 	createWafServiceClient(provider)
@@ -124,8 +125,10 @@ func getAuthOptions(secret *apiv1.Secret) golangsdk.AuthOptions {
 	}
 }
 
-func getKubernetesSecrets(clientSet *kubernetes.Clientset) *apiv1.Secret {
-	secret, err := clientSet.CoreV1().Secrets("default").Get(context.TODO(), "otc-credentials", metav1.GetOptions{})
+func getOtcCredentials(clientSet *kubernetes.Clientset) *apiv1.Secret {
+	secret, err := clientSet.CoreV1().
+		Secrets("default").
+		Get(context.Background(), "otc-credentials", metav1.GetOptions{})
 
 	if err != nil {
 		log.Fatal("error getting kubernetes secrets", err)
@@ -135,7 +138,15 @@ func getKubernetesSecrets(clientSet *kubernetes.Clientset) *apiv1.Secret {
 
 func flagWebhookParameters() {
 	flag.IntVar(&parameters.port, "port", 8443, "Webhook server port.")
-	flag.StringVar(&parameters.certFile, "tlsCertFile", "/etc/webhook/certs/tls.crt", "File containing the x509 Certificate for HTTPS.")
-	flag.StringVar(&parameters.keyFile, "tlsKeyFile", "/etc/webhook/certs/tls.key", "File containing the x509 private key to --tlsCertFile.")
+	flag.StringVar(
+		&parameters.certFile,
+		"tlsCertFile",
+		"/etc/webhook/certs/tls.crt",
+		"File containing the x509 Certificate for HTTPS.")
+	flag.StringVar(
+		&parameters.keyFile,
+		"tlsKeyFile",
+		"/etc/webhook/certs/tls.key",
+		"File containing the x509 private key to --tlsCertFile.")
 	flag.Parse()
 }
