@@ -1,121 +1,148 @@
 package main
 
-//import (
-//	"errors"
-//	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
-//	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
-//	"github.com/opentelekomcloud/gophertelekomcloud/pagination"
-//	"github.com/stretchr/testify/assert"
-//	apiv1 "k8s.io/api/core/v1"
-//	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-//	"testing"
-//)
-//
-//func TestCreateOrUpdateCertificate_Create(t *testing.T) {
-//	setupWafTestClient()
-//	var functionCalls []string
-//	wafCreate = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (r waf.CreateResult) {
-//		functionCalls = append(functionCalls, "wafCreate")
-//		return waf.CreateResult{}
-//	}
-//	createExtract = func(createResult waf.CreateResult) (*waf.Certificate, error) {
-//		functionCalls = append(functionCalls, "createExtract")
-//		return &waf.Certificate{Id: "1"}, nil
-//	}
-//
-//	secret := apiv1.Secret{
-//		Data: map[string][]byte{
-//			"tls.crt": []byte("any cert"),
-//			"tls.key": []byte("any private key"),
-//		},
-//	}
-//
-//	result := CreateOrUpdateCertificate(secret)
-//	assert.Equal(t, "1", result)
-//	assert.EqualValues(t, functionCalls, []string{"wafCreate", "createExtract"})
-//}
-//
-//func TestCreateOrUpdateCertificate_Create_Fails(t *testing.T) {
-//	secret := apiv1.Secret{
-//		ObjectMeta: v1.ObjectMeta{
-//			ResourceVersion: "version1",
-//		},
-//		Data: map[string][]byte{
-//			"tls.crt": []byte("any cert"),
-//			"tls.key": []byte("any private key"),
-//		},
-//	}
-//	setupWafTestClient()
-//	var functionCalls []string
-//	wafCreate = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (r waf.CreateResult) {
-//		functionCalls = append(functionCalls, "wafCreate")
-//		return waf.CreateResult{}
-//	}
-//	createExtract = func(createResult waf.CreateResult) (*waf.Certificate, error) {
-//		functionCalls = append(functionCalls, "createExtract")
-//		return nil, errors.New("any error")
-//	}
-//	wafList = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) (p pagination.Pager) {
-//		functionCalls = append(functionCalls, "wafList")
-//		return pagination.Pager{}
-//	}
-//	allPages = func(p pagination.Pager) (pagination.Page, error) {
-//		functionCalls = append(functionCalls, "allPages")
-//		return waf.CertificatePage{}, nil
-//	}
-//	wafExtractCertificates = func(p pagination.Page) ([]waf.Certificate, error) {
-//		functionCalls = append(functionCalls, "wafExtractCertificates")
-//		return []waf.Certificate{{Id: "12345", Name: "tls-cert-" + secret.ResourceVersion}}, nil
-//	}
-//
-//	result := CreateOrUpdateCertificate(secret)
-//
-//	assert.Equal(t, "12345", result)
-//	assert.EqualValues(t,
-//		functionCalls,
-//		[]string{"wafCreate", "createExtract", "wafList", "allPages", "wafExtractCertificates"})
-//}
-//
-//func TestCreateOrUpdateCertificate_Update_Successful(t *testing.T) {
-//	setupWafTestClient()
-//	var functionCalls []string
-//	wafCreate = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (r waf.CreateResult) {
-//		functionCalls = append(functionCalls, "wafCreate")
-//		return waf.CreateResult{}
-//	}
-//	createExtract = func(createResult waf.CreateResult) (*waf.Certificate, error) {
-//		functionCalls = append(functionCalls, "createExtract")
-//		return &waf.Certificate{Id: "1"}, nil
-//	}
-//	wafDelete = func(c *golangsdk.ServiceClient, id string) (r waf.DeleteResult) {
-//		functionCalls = append(functionCalls, "wafDelete")
-//		return waf.DeleteResult{}
-//	}
-//	deleteExtract = func(deleteResult waf.DeleteResult) (*golangsdk.ErrRespond, error) {
-//		functionCalls = append(functionCalls, "deleteExtract")
-//		return nil, nil
-//	}
-//
-//	secret := apiv1.Secret{
-//		Data: map[string][]byte{
-//			"tls.crt": []byte("any cert"),
-//			"tls.key": []byte("any private key"),
-//		},
-//		ObjectMeta: v1.ObjectMeta{
-//			Labels: map[string]string{
-//				"cert-waf-id": "12345",
-//			},
-//		},
-//	}
-//
-//	result := CreateOrUpdateCertificate(secret)
-//	assert.Equal(t, "1", result)
-//	assert.EqualValues(t, functionCalls, []string{"wafDelete", "deleteExtract", "wafCreate", "createExtract"})
-//}
-//
-//func setupWafTestClient() {
-//	provider := &golangsdk.ProviderClient{}
-//	wafClient = &golangsdk.ServiceClient{
-//		ProviderClient: provider,
-//	}
-//}
+import (
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
+	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
+	wafDomain "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/domains"
+	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"testing"
+)
+
+func TestCreateOrUpdateCertificate_Create(t *testing.T) {
+	setupWafTestClient()
+	secret := apiv1.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			ResourceVersion: "version1",
+			Labels: map[string]string{
+				"waf-domain-id": "45656165da65456",
+			},
+		},
+		Data: map[string][]byte{
+			"tls.crt": []byte("any cert"),
+			"tls.key": []byte("any private key"),
+		},
+	}
+	var functionCalls []string
+
+	listAndExtract = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) ([]waf.Certificate, error) {
+		functionCalls = append(functionCalls, "listAndExtract")
+		return []waf.Certificate{}, nil
+	}
+
+	createAndExtract = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (*waf.Certificate, error) {
+		functionCalls = append(functionCalls, "createAndExtract")
+		return &waf.Certificate{Id: "1"}, nil
+	}
+
+	updateDomainAndExtract = func(
+		c *golangsdk.ServiceClient,
+		domainID string,
+		opts wafDomain.UpdateOptsBuilder) (*wafDomain.Domain, error) {
+		functionCalls = append(functionCalls, "updateDomainAndExtract")
+		emptyWafDomain := wafDomain.Domain{}
+		return &emptyWafDomain, nil
+	}
+
+	result, _ := CreateOrUpdateCertificate(secret)
+	assert.Equal(t, "1", *result)
+	assert.EqualValues(t, []string{"listAndExtract", "createAndExtract", "updateDomainAndExtract"}, functionCalls)
+}
+
+func TestCreateOrUpdateCertificate_Create_AlreadyExists(t *testing.T) {
+	secret := apiv1.Secret{
+		Data: map[string][]byte{
+			"tls.crt": []byte("any cert"),
+			"tls.key": []byte("any private key"),
+		},
+	}
+	setupWafTestClient()
+	var functionCalls []string
+
+	listAndExtract = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) ([]waf.Certificate, error) {
+		functionCalls = append(functionCalls, "listAndExtract")
+		return []waf.Certificate{{
+			Name: "4f4eb3c8aaf131baaf5d781449260177b6a4099240d8c999acb7b3b60cb318ed",
+			Id:   "previous-id",
+		}}, nil
+	}
+
+	result, _ := CreateOrUpdateCertificate(secret)
+
+	assert.Equal(t, "previous-id", *result)
+	assert.EqualValues(t, []string{"listAndExtract"}, functionCalls)
+}
+
+func TestCreateOrUpdateCertificate_Update(t *testing.T) {
+	setupWafTestClient()
+	secret := apiv1.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			ResourceVersion: "version1",
+			Labels: map[string]string{
+				"cert-waf-id":   "previous-id",
+				"waf-domain-id": "45656165da65456",
+			},
+		},
+		Data: map[string][]byte{
+			"tls.crt": []byte("any cert"),
+			"tls.key": []byte("any private key"),
+		},
+	}
+	var functionCalls []string
+	listAndExtract = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) ([]waf.Certificate, error) {
+		functionCalls = append(functionCalls, "listAndExtract")
+		return []waf.Certificate{}, nil
+	}
+	createAndExtract = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (*waf.Certificate, error) {
+		functionCalls = append(functionCalls, "createAndExtract")
+		return &waf.Certificate{Id: "new-id"}, nil
+	}
+	updateDomainAndExtract = func(
+		c *golangsdk.ServiceClient,
+		domainID string,
+		opts wafDomain.UpdateOptsBuilder) (*wafDomain.Domain, error) {
+		functionCalls = append(functionCalls, "updateDomainAndExtract")
+		emptyWafDomain := wafDomain.Domain{}
+		return &emptyWafDomain, nil
+	}
+	deleteAndExtract = func(c *golangsdk.ServiceClient, id string) (*golangsdk.ErrRespond, error) {
+		functionCalls = append(functionCalls, "deleteAndExtract")
+		errRespond := golangsdk.ErrRespond{}
+		return &errRespond, nil
+	}
+
+	result, _ := CreateOrUpdateCertificate(secret)
+	assert.Equal(t, "new-id", *result)
+	assert.EqualValues(t, []string{"listAndExtract", "createAndExtract",
+		"updateDomainAndExtract", "deleteAndExtract"}, functionCalls)
+}
+
+func TestCreateOrUpdateCertificate_Fails(t *testing.T) {
+	setupWafTestClient()
+	secret := apiv1.Secret{
+		Data: map[string][]byte{
+			"tls.crt": []byte("any cert"),
+			"tls.key": []byte("any private key"),
+		},
+	}
+	var functionCalls []string
+
+	listAndExtract = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) ([]waf.Certificate, error) {
+		functionCalls = append(functionCalls, "listAndExtract")
+		return []waf.Certificate{}, golangsdk.BaseError{Info: "error occurred"}
+	}
+
+	result, err := CreateOrUpdateCertificate(secret)
+
+	assert.Equal(t, "error occurred", err.Error())
+	assert.Nil(t, result)
+	assert.EqualValues(t, []string{"listAndExtract"}, functionCalls)
+}
+
+func setupWafTestClient() {
+	provider := &golangsdk.ProviderClient{}
+	wafClient = &golangsdk.ServiceClient{
+		ProviderClient: provider,
+	}
+}

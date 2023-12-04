@@ -6,7 +6,6 @@ import (
 	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
 	wafDomain "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/domains"
-	"github.com/opentelekomcloud/gophertelekomcloud/pagination"
 	"github.com/thoas/go-funk"
 	apiv1 "k8s.io/api/core/v1"
 	"log"
@@ -22,43 +21,28 @@ type CertificateSecret struct {
 	certWafId   string
 }
 
-var wafCreate = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (r waf.CreateResult) {
-	return waf.Create(c, opts)
+var createAndExtract = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (*waf.Certificate, error) {
+	return waf.Create(c, opts).Extract()
 }
 
-var wafDelete = func(c *golangsdk.ServiceClient, id string) (r waf.DeleteResult) {
-	return waf.Delete(c, id)
+var deleteAndExtract = func(c *golangsdk.ServiceClient, id string) (*golangsdk.ErrRespond, error) {
+	return waf.Delete(c, id).Extract()
 }
 
-var createExtract = func(createResult waf.CreateResult) (*waf.Certificate, error) {
-	return createResult.Extract()
+var listAndExtract = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) ([]waf.Certificate, error) {
+	pages, err := waf.List(c, opts).AllPages()
+	if err != nil {
+		log.Println(err)
+		return []waf.Certificate{}, err
+	}
+	return waf.ExtractCertificates(pages)
 }
 
-var deleteExtract = func(deleteResult waf.DeleteResult) (*golangsdk.ErrRespond, error) {
-	return deleteResult.Extract()
-}
-
-var wafList = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) (p pagination.Pager) {
-	return waf.List(c, opts)
-}
-
-var allPages = func(p pagination.Pager) (pagination.Page, error) {
-	return p.AllPages()
-}
-
-var wafExtractCertificates = func(p pagination.Page) ([]waf.Certificate, error) {
-	return waf.ExtractCertificates(p)
-}
-
-var wafExtractDomain = func(d wafDomain.UpdateResult) (*wafDomain.Domain, error) {
-	return d.Extract()
-}
-
-var wafUpdateDomain = func(
+var updateDomainAndExtract = func(
 	c *golangsdk.ServiceClient,
 	domainID string,
-	opts wafDomain.UpdateOptsBuilder) (r wafDomain.UpdateResult) {
-	return wafDomain.Update(c, domainID, opts)
+	opts wafDomain.UpdateOptsBuilder) (*wafDomain.Domain, error) {
+	return wafDomain.Update(c, domainID, opts).Extract()
 }
 
 func CreateOrUpdateCertificate(secret apiv1.Secret) (*string, error) {
@@ -94,10 +78,9 @@ func CreateOrUpdateCertificate(secret apiv1.Secret) (*string, error) {
 }
 
 func attachCertificateToWafDomain(domainId string, certId string) error {
-	updateResult := wafUpdateDomain(wafClient, domainId, wafDomain.UpdateOpts{
+	_, err := updateDomainAndExtract(wafClient, domainId, wafDomain.UpdateOpts{
 		CertificateId: certId,
 	})
-	_, err := wafExtractDomain(updateResult)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -107,8 +90,7 @@ func attachCertificateToWafDomain(domainId string, certId string) error {
 }
 
 func deletePreviousCertificate(id string) {
-	deleteResult := wafDelete(wafClient, id)
-	_, err := deleteExtract(deleteResult)
+	_, err := deleteAndExtract(wafClient, id)
 	if err != nil {
 		log.Println("previous certificate couldn't be deleted", err)
 	}
@@ -117,15 +99,9 @@ func deletePreviousCertificate(id string) {
 
 func findCertInWaf(secret CertificateSecret) (*string, error) {
 	log.Println("trying to find certificate in the waf...")
-	page, err := allPages(wafList(wafClient, waf.ListOpts{}))
+	certs, err := listAndExtract(wafClient, waf.ListOpts{})
 	if err != nil {
-		log.Println("couldn't get page of existing certificates in the waf ", err)
-		return nil, err
-	}
-
-	certs, err := wafExtractCertificates(page)
-	if err != nil {
-		log.Println("couldn't extract certificate ", err)
+		log.Println("couldn't get existing certificates from the waf ", err)
 		return nil, err
 	}
 
@@ -155,8 +131,7 @@ func uploadNewCertificate(certSecret CertificateSecret) (*string, error) {
 		Key:     certSecret.tlsKey,
 	}
 
-	createResult := wafCreate(wafClient, createOpts)
-	certificate, err := createExtract(createResult)
+	certificate, err := createAndExtract(wafClient, createOpts)
 	if err != nil {
 		log.Println("certificate couldn't be uploaded ", err)
 		return nil, err
