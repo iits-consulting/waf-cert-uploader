@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	v1 "k8s.io/api/admission/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -16,113 +17,152 @@ type patchOperation struct {
 	Value interface{} `json:"value,omitempty"`
 }
 
-func HandleUploadCertToWaf(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal("error while reading admission request body", err)
-	}
+var createOrUpdateCertificate = func(secret apiv1.Secret) (*string, error) {
+	return CreateOrUpdateCertificate(secret)
+}
 
+func HandleUploadCertToWaf(writer http.ResponseWriter, httpRequest *http.Request) {
 	log.Println("received admission review")
 
-	admissionReviewReq := deserializeToAdmissionReview(w, body)
-
-	log.Printf("Kind: %v \t RequestKind: %v \t Name: %v \t Operation: %v \t UID: %v \t UserInfo: %v \t APIVersion: %v \n",
-		admissionReviewReq.Request.Kind,
-		admissionReviewReq.Request.RequestKind,
-		admissionReviewReq.Request.Name,
-		admissionReviewReq.Request.Operation,
-		admissionReviewReq.Request.UID,
-		admissionReviewReq.Request.UserInfo,
-		admissionReviewReq.APIVersion,
-	)
-	log.Println(string(admissionReviewReq.Request.Object.Raw))
-
-	var secret apiv1.Secret
-
-	err = json.Unmarshal(admissionReviewReq.Request.Object.Raw, &secret)
-
-	certId, err := CreateOrUpdateCertificate(secret)
-
-	var responseBytes []byte
-
+	body, err := getRequestBody(httpRequest)
 	if err != nil {
-		responseBytes = createRejectAdmissionResponse(admissionReviewReq, err)
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	admissionReview, err := deserializeToAdmissionReview(*body)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	secret, err := getAdmissionReviewObject(*admissionReview)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	certId, wafServiceError := createOrUpdateCertificate(*secret)
+
+	responseBytes, err := createResponseObject(wafServiceError, *admissionReview, *secret, certId)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	writeResponseObjectToConnection(writer, err, *responseBytes)
+}
+
+func writeResponseObjectToConnection(writer http.ResponseWriter, err error, responseBytes []byte) {
+	_, err = writer.Write(responseBytes)
+	if err != nil {
+		log.Println("http reply failed", err)
+	}
+}
+
+func createResponseObject(
+	wafServiceError error,
+	admissionReview v1.AdmissionReview,
+	secret apiv1.Secret,
+	certId *string) (*[]byte, error) {
+	if wafServiceError != nil {
+		log.Println("the admission review is rejected due to an error", wafServiceError)
+		rejectResponse, err := createRejectAdmissionResponse(admissionReview)
+		if err != nil {
+			return nil, err
+		}
+		return rejectResponse, nil
 	} else {
-		patchBytes := createIdPatch(secret, *certId)
-		responseBytes = createAdmissionResponse(admissionReviewReq, patchBytes, err)
+		patchBytes, err := createCertificateIdPatch(secret, *certId)
+		if err != nil {
+			return nil, err
+		}
+		patchedResponse, err := createPatchedAdmissionResponse(admissionReview, *patchBytes)
+		if err != nil {
+			return nil, err
+		}
+		return patchedResponse, nil
 	}
+}
 
-	_, err = w.Write(responseBytes)
+func getRequestBody(httpRequest *http.Request) (*[]byte, error) {
+	body, err := io.ReadAll(httpRequest.Body)
 	if err != nil {
-		log.Fatal("http reply failed", err)
+		log.Println("reading admission request body failed", err)
+		return nil, err
 	}
+	return &body, nil
 }
 
-func deserializeToAdmissionReview(w http.ResponseWriter, body []byte) v1.AdmissionReview {
-	var admissionReviewReq v1.AdmissionReview
-
-	if _, _, err := universalDeserializer.Decode(body, nil, &admissionReviewReq); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Fatal("could not deserialize admission request", err)
-	} else if admissionReviewReq.Request == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Fatal("malformed admission review: request is nil")
+func getAdmissionReviewObject(admissionReview v1.AdmissionReview) (*apiv1.Secret, error) {
+	var secret apiv1.Secret
+	err := json.Unmarshal(admissionReview.Request.Object.Raw, &secret)
+	if err != nil {
+		log.Println("unmarshalling the admission review request object failed", err)
+		return nil, err
 	}
-
-	return admissionReviewReq
+	return &secret, nil
 }
 
-func createAdmissionResponse(admissionReviewReq v1.AdmissionReview, patchBytes []byte, err error) []byte {
-	admissionReviewResponse := v1.AdmissionReview{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: admissionReviewReq.APIVersion,
-			Kind:       admissionReviewReq.Kind,
-		},
-		Response: &v1.AdmissionResponse{
-			UID:     admissionReviewReq.Request.UID,
-			Allowed: true,
-		},
+func deserializeToAdmissionReview(body []byte) (*v1.AdmissionReview, error) {
+	var admissionReview v1.AdmissionReview
+
+	if _, _, err := universalDeserializer.Decode(body, nil, &admissionReview); err != nil {
+		log.Println("could not deserialize admission request", err)
+		return nil, err
+	} else if admissionReview.Request == nil {
+		log.Println("malformed admission review: request is nil")
+		return nil, errors.New("admission review was nil")
 	}
+
+	return &admissionReview, nil
+}
+
+func createPatchedAdmissionResponse(admissionReview v1.AdmissionReview, patchBytes []byte) (*[]byte, error) {
+	admissionReviewResponse := createAdmissionReviewResponse(admissionReview, true)
 
 	applyPatchesToAdmissionResponse(admissionReviewResponse, patchBytes)
 
-	bytes, err := json.MarshalIndent(&admissionReviewResponse, "", "    ")
+	bytes, err := marshal(admissionReviewResponse)
+
 	if err != nil {
-		log.Fatal("marshaling admission response failed", err)
+		return nil, err
 	}
 
-	log.Println(string(bytes))
-	return bytes
+	return bytes, nil
 }
 
-func createRejectAdmissionResponse(admissionReviewReq v1.AdmissionReview, err error) []byte {
-	admissionReviewResponse := v1.AdmissionReview{
+func createRejectAdmissionResponse(admissionReview v1.AdmissionReview) (*[]byte, error) {
+	admissionReviewResponse := createAdmissionReviewResponse(admissionReview, false)
+
+	bytes, err := marshal(admissionReviewResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
+
+func createAdmissionReviewResponse(admissionReview v1.AdmissionReview, allowed bool) v1.AdmissionReview {
+	return v1.AdmissionReview{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: admissionReviewReq.APIVersion,
-			Kind:       admissionReviewReq.Kind,
+			APIVersion: admissionReview.APIVersion,
+			Kind:       admissionReview.Kind,
 		},
 		Response: &v1.AdmissionResponse{
-			UID:     admissionReviewReq.Request.UID,
-			Allowed: false,
+			UID:     admissionReview.Request.UID,
+			Allowed: allowed,
 		},
 	}
-
-	bytes, err := json.MarshalIndent(&admissionReviewResponse, "", "    ")
-	if err != nil {
-		log.Fatal("marshaling admission response failed", err)
-	}
-
-	log.Println(string(bytes))
-	return bytes
 }
 
 func applyPatchesToAdmissionResponse(admissionReviewResponse v1.AdmissionReview, patchBytes []byte) {
 	admissionReviewResponse.Response.Patch = patchBytes
-	pt := v1.PatchTypeJSONPatch
-	admissionReviewResponse.Response.PatchType = &pt
+	patchType := v1.PatchTypeJSONPatch
+	admissionReviewResponse.Response.PatchType = &patchType
 }
 
-func createIdPatch(secret apiv1.Secret, id string) []byte {
+func createCertificateIdPatch(secret apiv1.Secret, id string) (*[]byte, error) {
 	var patches []patchOperation
 
 	labels := secret.ObjectMeta.Labels
@@ -134,10 +174,19 @@ func createIdPatch(secret apiv1.Secret, id string) []byte {
 		Value: labels,
 	})
 
-	patchBytes, err := json.Marshal(patches)
-
+	patchBytes, err := marshal(patches)
 	if err != nil {
-		log.Fatal("could not marshal JSON patch", err)
+		return nil, err
 	}
-	return patchBytes
+
+	return patchBytes, nil
+}
+
+func marshal(any interface{}) (*[]byte, error) {
+	bytes, err := json.Marshal(&any)
+	if err != nil {
+		log.Println("marshaling failed", err)
+		return nil, err
+	}
+	return &bytes, nil
 }
