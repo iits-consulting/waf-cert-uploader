@@ -12,32 +12,64 @@ import (
 
 var WafClient *golangsdk.ServiceClient
 
-func SetupOtcClient(clientSet *kubernetes.Clientset) {
-	secret := getOtcCredentials(clientSet)
-	authOpts := getAuthOptions(secret)
-	provider := createProviderClient(authOpts)
-	createWafServiceClient(provider)
+var newWafV1 = func(
+	provider *golangsdk.ProviderClient,
+	opts golangsdk.EndpointOpts) (*golangsdk.ServiceClient, error) {
+	return openstack.NewWAFV1(provider, opts)
 }
 
-func createWafServiceClient(provider *golangsdk.ProviderClient) {
+var getSecret = func(
+	clientSet kubernetes.Clientset,
+	namespace string,
+	context context.Context,
+	secretName string,
+	getOptions metav1.GetOptions) (*apiv1.Secret, error) {
+	return clientSet.CoreV1().Secrets(namespace).Get(context, secretName, getOptions)
+}
+
+var getProviderClient = func(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
+	return openstack.AuthenticatedClient(authOpts)
+}
+
+func SetupOtcClient(clientSet *kubernetes.Clientset) error {
+	secret, err := getOtcCredentials(clientSet)
+	if err != nil {
+		return err
+	}
+	authOpts := getAuthOptions(secret)
+	provider, err := createProviderClient(authOpts)
+	if err != nil {
+		return err
+	}
+	err = createWafServiceClient(provider)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createWafServiceClient(provider *golangsdk.ProviderClient) error {
 	opts := golangsdk.EndpointOpts{Region: "eu-de"}
 	var err error
-	WafClient, err = openstack.NewWAFV1(provider, opts)
+	WafClient, err = newWafV1(provider, opts)
 
 	if err != nil {
-		log.Fatal("error creating waf service client", err)
+		log.Println("error creating waf service client", err)
+		return err
 	}
 	log.Println("new waf client created successfully!")
+	return nil
 }
 
-func createProviderClient(authOpts golangsdk.AuthOptions) *golangsdk.ProviderClient {
-	provider, err := openstack.AuthenticatedClient(authOpts)
+func createProviderClient(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
+	provider, err := getProviderClient(authOpts)
 	if err != nil {
-		log.Fatal("error creating otc client", err)
+		log.Println("error creating otc client", err)
+		return nil, err
 	}
 
 	log.Println("new otc client created successfully!")
-	return provider
+	return provider, nil
 }
 
 func getAuthOptions(secret *apiv1.Secret) golangsdk.AuthOptions {
@@ -51,13 +83,12 @@ func getAuthOptions(secret *apiv1.Secret) golangsdk.AuthOptions {
 	}
 }
 
-func getOtcCredentials(clientSet *kubernetes.Clientset) *apiv1.Secret {
-	secret, err := clientSet.CoreV1().
-		Secrets("default").
-		Get(context.Background(), "otc-credentials", metav1.GetOptions{})
+func getOtcCredentials(clientSet *kubernetes.Clientset) (*apiv1.Secret, error) {
+	secret, err := getSecret(*clientSet, "default", context.Background(), "otc-credentials", metav1.GetOptions{})
 
 	if err != nil {
-		log.Fatal("error getting kubernetes secrets", err)
+		log.Println("error getting kubernetes secrets", err)
+		return nil, err
 	}
-	return secret
+	return secret, nil
 }

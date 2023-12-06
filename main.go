@@ -29,7 +29,10 @@ func main() {
 	kubeConfig := getKubeConfig()
 	kubeClientSet := getClientSet(kubeConfig)
 
-	service.SetupOtcClient(kubeClientSet)
+	err := service.SetupOtcClient(kubeClientSet)
+	if err != nil {
+		log.Fatal("otc client setup failed", err)
+	}
 
 	http.HandleFunc("/upload-cert-to-waf", controller.HandleUploadCertToWaf)
 	addr := ":" + strconv.Itoa(parameters.port)
