@@ -11,8 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"waf-webhook/controller"
-	"waf-webhook/service"
+	"waf-cert-uploader/controller"
+	"waf-cert-uploader/service"
 )
 
 type ServerParameters struct {

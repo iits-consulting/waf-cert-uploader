@@ -66,7 +66,7 @@ func TestSetupOtcClient(t *testing.T) {
 	assert.Equal(t, "eu-de", endpointOptsSlot.Region)
 	assert.Equal(t, &clientSet, clientSetSlot)
 	assert.Equal(t, "default", namespaceSlot)
-	assert.Equal(t, "otc-credentials", secretNameSlot)
+	assert.Equal(t, "otc-auth-options", secretNameSlot)
 	assert.Equal(t, WafClient, serviceClientSlot)
 }
 

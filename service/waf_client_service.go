@@ -84,7 +84,7 @@ func getAuthOptions(secret *apiv1.Secret) golangsdk.AuthOptions {
 }
 
 func getOtcCredentials(clientSet *kubernetes.Clientset) (*apiv1.Secret, error) {
-	secret, err := getSecret(*clientSet, "default", context.Background(), "otc-credentials", metav1.GetOptions{})
+	secret, err := getSecret(*clientSet, "default", context.Background(), "otc-auth-options", metav1.GetOptions{})
 
 	if err != nil {
 		log.Println("error getting kubernetes secrets", err)

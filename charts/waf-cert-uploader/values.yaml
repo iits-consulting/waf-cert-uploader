@@ -1,0 +1,15 @@
+image:
+  imageRepository: "ghcr.io/iits-consulting"
+  imageTag: "v0.1.0"
+
+
+osUsername: ""
+osPassword: ""
+osAccessKey: ""
+osSecretKey: ""
+osProjectId: ""
+osDomainName: ""
+namespaces: ""
+metricsPort: 39100
+waitDuration: 60
+fetchResourceIdToName: false

@@ -8,7 +8,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
-	"waf-webhook/adapter"
+	"waf-cert-uploader/adapter"
 )
 
 func TestCreateOrUpdateCertificate_Create(t *testing.T) {

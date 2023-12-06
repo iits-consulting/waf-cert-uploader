@@ -1,0 +1,30 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dev.waf-cert-uploader.iits.tech
+  namespace: waf
+spec:
+  secretTemplate:
+    labels:
+      webhook-enabled: "true"
+      waf-domain-id: "d3547e5e92a84241af1ea8a24ba9da68"
+  secretName: waf-cert-uploader-certificate
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+      - jetstack
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - "dev.waf-cert-uploader.iits.tech"
+    - "admin.dev.waf-cert-uploader.iits.tech"
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer

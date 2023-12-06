@@ -7,6 +7,6 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /waf-webhook ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o /waf-cert-uploader ./
 
-CMD ["/waf-webhook"]
+CMD ["/waf-cert-uploader"]

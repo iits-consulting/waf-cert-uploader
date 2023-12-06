@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-uploader
+  namespace: waf
+spec:
+  ports:
+    - name: application
+      protocol: TCP
+      port: 443
+      targetPort: tls
+    - name: metrics
+      protocol: TCP
+      port: 80
+      targetPort: metrics
+  selector:
+    app: cert-uploader
+  type: ClusterIP
+  sessionAffinity: None

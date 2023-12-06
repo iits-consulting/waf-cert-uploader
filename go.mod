@@ -1,4 +1,4 @@
-module waf-webhook
+module waf-cert-uploader
 
 go 1.21
 

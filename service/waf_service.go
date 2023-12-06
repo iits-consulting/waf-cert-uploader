@@ -9,7 +9,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"log"
 	"regexp"
-	"waf-webhook/adapter"
+	"waf-cert-uploader/adapter"
 )
 
 type CertificateSecret struct {

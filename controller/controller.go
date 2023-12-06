@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"log"
 	"net/http"
-	"waf-webhook/service"
+	"waf-cert-uploader/service"
 )
 
 type patchOperation struct {

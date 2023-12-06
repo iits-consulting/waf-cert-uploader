@@ -17,7 +17,7 @@ jobs:
       with:
         go-version: '1.21'
     - name: Build
-      run: go build -v -o waf-webhook
+      run: go build -v -o waf-cert-uploader
 
   test:
     needs: build
@@ -54,8 +54,8 @@ jobs:
         platforms: linux/amd64
         push: true
         tags: |
-          anyrobli/waf-webhook:${{ github.sha }}
-          anyrobli/waf-webhook:latest
+          anyrobli/waf-cert-uploader:${{ github.sha }}
+          anyrobli/waf-cert-uploader:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
   deploy-dev:
@@ -69,6 +69,6 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: set image deployment/waf-webhook server=anyrobli/waf-webhook:${{ github.sha }}
+          args: set image -n waf deployment/cert-uploader server=anyrobli/waf-cert-uploader:${{ github.sha }}
 
 
