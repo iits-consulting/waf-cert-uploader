@@ -1,15 +1,15 @@
-package main
+package service
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
 	wafDomain "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/domains"
 	"github.com/thoas/go-funk"
 	apiv1 "k8s.io/api/core/v1"
 	"log"
 	"regexp"
+	"waf-webhook/adapter"
 )
 
 type CertificateSecret struct {
@@ -19,30 +19,6 @@ type CertificateSecret struct {
 	domainName  string
 	wafDomainId string
 	certWafId   string
-}
-
-var createAndExtract = func(c *golangsdk.ServiceClient, opts waf.CreateOpts) (*waf.Certificate, error) {
-	return waf.Create(c, opts).Extract()
-}
-
-var deleteAndExtract = func(c *golangsdk.ServiceClient, id string) (*golangsdk.ErrRespond, error) {
-	return waf.Delete(c, id).Extract()
-}
-
-var listAndExtract = func(c *golangsdk.ServiceClient, opts waf.ListOptsBuilder) ([]waf.Certificate, error) {
-	pages, err := waf.List(c, opts).AllPages()
-	if err != nil {
-		log.Println(err)
-		return []waf.Certificate{}, err
-	}
-	return waf.ExtractCertificates(pages)
-}
-
-var updateDomainAndExtract = func(
-	c *golangsdk.ServiceClient,
-	domainID string,
-	opts wafDomain.UpdateOptsBuilder) (*wafDomain.Domain, error) {
-	return wafDomain.Update(c, domainID, opts).Extract()
 }
 
 func CreateOrUpdateCertificate(secret apiv1.Secret) (*string, error) {
@@ -78,7 +54,7 @@ func CreateOrUpdateCertificate(secret apiv1.Secret) (*string, error) {
 }
 
 func attachCertificateToWafDomain(domainId string, certId string) error {
-	_, err := updateDomainAndExtract(wafClient, domainId, wafDomain.UpdateOpts{
+	_, err := adapter.UpdateDomainAndExtract(WafClient, domainId, wafDomain.UpdateOpts{
 		CertificateId: certId,
 	})
 	if err != nil {
@@ -90,16 +66,17 @@ func attachCertificateToWafDomain(domainId string, certId string) error {
 }
 
 func deletePreviousCertificate(id string) {
-	_, err := deleteAndExtract(wafClient, id)
+	_, err := adapter.DeleteAndExtract(WafClient, id)
 	if err != nil {
 		log.Println("previous certificate couldn't be deleted", err)
+	} else {
+		log.Printf("previous certificate with id %s was deleted successfully", id)
 	}
-	log.Printf("previous certificate with id %s was deleted successfully", id)
 }
 
 func findCertInWaf(secret CertificateSecret) (*string, error) {
 	log.Println("trying to find certificate in the waf...")
-	certs, err := listAndExtract(wafClient, waf.ListOpts{})
+	certs, err := adapter.ListAndExtract(WafClient, waf.ListOpts{})
 	if err != nil {
 		log.Println("couldn't get existing certificates from the waf ", err)
 		return nil, err
@@ -131,7 +108,7 @@ func uploadNewCertificate(certSecret CertificateSecret) (*string, error) {
 		Key:     certSecret.tlsKey,
 	}
 
-	certificate, err := createAndExtract(wafClient, createOpts)
+	certificate, err := adapter.CreateAndExtract(WafClient, createOpts)
 	if err != nil {
 		log.Println("certificate couldn't be uploaded ", err)
 		return nil, err

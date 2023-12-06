@@ -1,4 +1,4 @@
-package main
+package controller
 
 import (
 	"encoding/json"
@@ -7,8 +7,11 @@ import (
 	v1 "k8s.io/api/admission/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"log"
 	"net/http"
+	"waf-webhook/service"
 )
 
 type patchOperation struct {
@@ -18,7 +21,7 @@ type patchOperation struct {
 }
 
 var createOrUpdateCertificate = func(secret apiv1.Secret) (*string, error) {
-	return CreateOrUpdateCertificate(secret)
+	return service.CreateOrUpdateCertificate(secret)
 }
 
 func HandleUploadCertToWaf(writer http.ResponseWriter, httpRequest *http.Request) {
@@ -106,6 +109,7 @@ func getAdmissionReviewObject(admissionReview v1.AdmissionReview) (*apiv1.Secret
 
 func deserializeToAdmissionReview(body []byte) (*v1.AdmissionReview, error) {
 	var admissionReview v1.AdmissionReview
+	universalDeserializer := serializer.NewCodecFactory(runtime.NewScheme()).UniversalDeserializer()
 
 	if _, _, err := universalDeserializer.Decode(body, nil, &admissionReview); err != nil {
 		log.Println("could not deserialize admission request", err)

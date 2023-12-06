@@ -114,7 +114,7 @@ func Test_AttachCertToWafDomain(t *testing.T) {
 
 func Test_DeleteCertificates(t *testing.T) {
 	idsToDelete := []string{
-		"8d9c54648d8145d79aa1f8e6838ca3c5",
+		"d268c928408c49c6b09236eb31f555e5",
 	}
 
 	funk.ForEach(idsToDelete, func(id string) {
