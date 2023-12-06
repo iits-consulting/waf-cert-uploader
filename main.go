@@ -26,57 +26,70 @@ var parameters ServerParameters
 func main() {
 	flagWebhookParameters()
 
-	kubeConfig := getKubeConfig()
-	kubeClientSet := getClientSet(kubeConfig)
-
-	err := service.SetupOtcClient(kubeClientSet)
+	kubeConfig, err := getKubeConfig()
 	if err != nil {
-		log.Fatal("otc client setup failed", err)
+		return
+	}
+	kubeClientSet, err := getClientSet(kubeConfig)
+	if err != nil {
+		return
+	}
+
+	err = service.SetupOtcClient(kubeClientSet)
+	if err != nil {
+		log.Println("otc client setup failed", err)
+		return
 	}
 
 	http.HandleFunc("/upload-cert-to-waf", controller.HandleUploadCertToWaf)
 	addr := ":" + strconv.Itoa(parameters.port)
-	log.Fatal(http.ListenAndServeTLS(addr, parameters.certFile, parameters.keyFile, nil))
+	err = http.ListenAndServeTLS(addr, parameters.certFile, parameters.keyFile, nil)
+	if err != nil {
+		log.Println("https server failed: ", err)
+	}
 }
 
-func getClientSet(config *rest.Config) *kubernetes.Clientset {
+func getClientSet(config *rest.Config) (*kubernetes.Clientset, error) {
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Fatal("error creating new client set from rest config", err)
+		log.Println("error creating new client set from rest config", err)
+		return nil, err
 	}
-	return clientSet
+	return clientSet, nil
 }
 
-func getKubeConfig() *rest.Config {
+func getKubeConfig() (*rest.Config, error) {
 	useKubeConfig := os.Getenv("USE_KUBECONFIG")
 	kubeConfigFilePath := os.Getenv("KUBECONFIG")
 	if len(useKubeConfig) == 0 {
 		inClusterConfig, err := rest.InClusterConfig()
 		if err != nil {
-			log.Fatal("error getting the in-cluster-config", err)
+			log.Println("error getting the in-cluster-config", err)
+			return nil, err
 		}
-		return inClusterConfig
+		return inClusterConfig, nil
 	} else {
 		return getLocalKubeConfig(kubeConfigFilePath)
 	}
 }
 
-func getLocalKubeConfig(kubeConfigFilePath string) *rest.Config {
-	var kubeconfig string
+func getLocalKubeConfig(kubeConfigFilePath string) (*rest.Config, error) {
+	var kubeConfig string
 
 	if kubeConfigFilePath == "" {
 		if home := homedir.HomeDir(); home != "" {
-			kubeconfig = filepath.Join(home, ".kube", "config")
+			kubeConfig = filepath.Join(home, ".kube", "config")
 		}
 	} else {
-		kubeconfig = kubeConfigFilePath
+		kubeConfig = kubeConfigFilePath
 	}
 
-	localKubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	localKubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
 	if err != nil {
-		log.Fatal("error getting local kube-config", err)
+		log.Println("error getting local kube-config", err)
+		return nil, err
 	}
-	return localKubeConfig
+	return localKubeConfig, nil
 }
 
 func flagWebhookParameters() {
