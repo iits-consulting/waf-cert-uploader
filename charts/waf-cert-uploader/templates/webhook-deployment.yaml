@@ -23,7 +23,7 @@ spec:
         - name: pull-secret-dockerhub
       containers:
         - name: server
-          image: anyrobli/waf-webhook:latest
+          image: anyrobli/waf-cert-uploader:latest
           ports:
             - name: tls
               containerPort: 8443
@@ -37,6 +37,25 @@ spec:
               readOnly: true
               mountPath: /etc/webhook/certs/
           imagePullPolicy: Always
+          env:
+            - name: OS_USERNAME
+              value: "{{ .Values.username }}"
+            - name: OS_PASSWORD
+              value: "{{ .Values.password }}"
+            - name: OS_DOMAIN_ID
+              value: "{{ .Values.domainID }}"
+            - name: OS_TENANT_ID
+              value: "{{ .Values.tenantID }}"
+            - name: OS_WAF_DOMAIN_ID
+              value: "{{ .Values.wafDomainID }}"
+            - name: OS_REGION
+              value: "{{ .Values.region }}"
+            - name: OS_OTC_DOMAIN_NAME
+              value: "{{ .Values.otcDomainName }}"
+            - name: OS_ACCESS_KEY
+              value: "{{ .Values.accessKey }}"
+            - name: OS_SECRET_KEY
+              value: "{{ .Values.secretKey }}"
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: cert-uploader
