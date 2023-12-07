@@ -3,12 +3,12 @@ entries:
   waf-cert-uploader:
     - apiVersion: v2
       appVersion: 0.1.0
-      created: "2023-12-07T16:20:24.142934+01:00"
+      created: "2023-12-07T17:03:15.006161+01:00"
       description: A Helm chart for Kubernetes
-      digest: 27f68306c21da625e5a4bb6673410f6d9b57d5ce249fab4c81bd55c75a96750f
+      digest: aa4ae25c07dbe376ba59c0ee5f51506738c0c469ed980c151829f268ab194ae3
       name: waf-cert-uploader
       type: application
       urls:
         - https://github.com/iits-consulting/waf-cert-uploader/waf-cert-uploader-0.1.0.tgz
       version: 0.1.0
-generated: "2023-12-07T16:20:24.142614+01:00"
+generated: "2023-12-07T17:03:15.005839+01:00"
