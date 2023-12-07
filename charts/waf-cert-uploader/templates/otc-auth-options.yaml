@@ -4,8 +4,8 @@ metadata:
   name: otc-auth-options
   namespace: default
 data:
-  domainID: blabla
-  password: blabla
-  tenantID: blabla
-  username: blabla
+  domainID: {{.Values.domainID}}
+  password: {{.Values.password}}
+  tenantID: {{.Values.tenantID}}
+  username: {{.Values.username}}
 type: Opaque

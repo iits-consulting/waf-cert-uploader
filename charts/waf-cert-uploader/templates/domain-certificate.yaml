@@ -7,7 +7,7 @@ spec:
   secretTemplate:
     labels:
       webhook-enabled: "true"
-      waf-domain-id: "d3547e5e92a84241af1ea8a24ba9da68"
+      waf-domain-id: {{.Values.wafDomainID}}
   secretName: waf-cert-uploader-certificate
   duration: 2160h # 90d
   renewBefore: 360h # 15d

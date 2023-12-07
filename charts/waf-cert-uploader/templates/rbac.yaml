@@ -10,7 +10,7 @@ metadata:
   name: cert-uploader
 rules:
   - apiGroups: [ "" ]
-    resources: [ "pods", "secrets" ]
+    resources: [ "secrets" ]
     verbs: [ "get", "watch", "list" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
