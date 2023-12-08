@@ -25,9 +25,8 @@ func TestMain(m *testing.M) {
 			IdentityEndpoint: os.Getenv("IAM_IDENTITY_ENDPOINT"),
 			Username:         os.Getenv("IAM_USERNAME"),
 			Password:         os.Getenv("IAM_PASSWORD"),
-			DomainID:         os.Getenv("OTC_DOMAIN_ID"),
+			DomainName:       os.Getenv("OTC_DOMAIN_NAME"),
 			TenantID:         os.Getenv("OTC_TENANT_ID"),
-			AllowReauth:      true,
 		}
 
 		provider, err := openstack.AuthenticatedClient(authOpts)

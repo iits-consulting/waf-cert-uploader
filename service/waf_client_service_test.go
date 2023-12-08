@@ -13,7 +13,7 @@ import (
 
 func TestSetupOtcClient(t *testing.T) {
 	clientSet := kubernetes.Clientset{}
-	var authOptsSlot golangsdk.AuthOptions
+	var authOptsSlot golangsdk.AuthOptionsProvider
 	var providerAddress *golangsdk.ProviderClient
 	var providerSlot *golangsdk.ProviderClient
 	var endpointOptsSlot golangsdk.EndpointOpts
@@ -32,14 +32,14 @@ func TestSetupOtcClient(t *testing.T) {
 			TypeMeta:   metav1.TypeMeta{},
 			ObjectMeta: metav1.ObjectMeta{},
 			Data: map[string][]byte{
-				"username": []byte("Robin"),
-				"password": []byte("abc123"),
-				"domainID": []byte("asdf5455fd4"),
-				"tenantID": []byte("qwer541235g3"),
+				"username":   []byte("Robin"),
+				"password":   []byte("abc123"),
+				"domainName": []byte("asdf5455fd4"),
+				"tenantID":   []byte("qwer541235g3"),
 			},
 		}, nil
 	}
-	getProviderClient = func(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
+	getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 		authOptsSlot = authOpts
 		provider := golangsdk.ProviderClient{}
 		providerAddress = &provider
@@ -56,12 +56,12 @@ func TestSetupOtcClient(t *testing.T) {
 	err := SetupOtcClient(&clientSet)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "Robin", authOptsSlot.Username)
-	assert.Equal(t, "abc123", authOptsSlot.Password)
-	assert.Equal(t, "asdf5455fd4", authOptsSlot.DomainID)
-	assert.Equal(t, "qwer541235g3", authOptsSlot.TenantID)
-	assert.Equal(t, "https://iam.eu-de.otc.t-systems.com:443/v3", authOptsSlot.IdentityEndpoint)
-	assert.Equal(t, true, authOptsSlot.AllowReauth)
+	assert.Equal(t, "Robin", authOptsSlot.(golangsdk.AuthOptions).Username)
+	assert.Equal(t, "abc123", authOptsSlot.(golangsdk.AuthOptions).Password)
+	assert.Equal(t, "asdf5455fd4", authOptsSlot.(golangsdk.AuthOptions).DomainName)
+	assert.Equal(t, "qwer541235g3", authOptsSlot.(golangsdk.AuthOptions).TenantID)
+	assert.Equal(t, "https://iam.eu-de.otc.t-systems.com:443/v3", authOptsSlot.(golangsdk.AuthOptions).IdentityEndpoint)
+	assert.Equal(t, true, authOptsSlot.(golangsdk.AuthOptions).AllowReauth)
 	assert.Equal(t, providerAddress, providerSlot)
 	assert.Equal(t, "eu-de", endpointOptsSlot.Region)
 	assert.Equal(t, &clientSet, clientSetSlot)
@@ -80,14 +80,14 @@ func TestSetupOtcClient_providerFails(t *testing.T) {
 			TypeMeta:   metav1.TypeMeta{},
 			ObjectMeta: metav1.ObjectMeta{},
 			Data: map[string][]byte{
-				"username": []byte("Robin"),
-				"password": []byte("abc123"),
-				"domainID": []byte("asdf5455fd4"),
-				"tenantID": []byte("qwer541235g3"),
+				"username":   []byte("Robin"),
+				"password":   []byte("abc123"),
+				"domainName": []byte("asdf5455fd4"),
+				"tenantID":   []byte("qwer541235g3"),
 			},
 		}, nil
 	}
-	getProviderClient = func(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
+	getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 		return nil, errors.New("auth fail")
 	}
 
@@ -118,7 +118,7 @@ func TestSetupOtcClient_wafClientFails(t *testing.T) {
 
 		return &apiv1.Secret{}, nil
 	}
-	getProviderClient = func(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
+	getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 		provider := golangsdk.ProviderClient{}
 		return &provider, nil
 	}

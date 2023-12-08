@@ -27,7 +27,7 @@ var getSecret = func(
 	return clientSet.CoreV1().Secrets(namespace).Get(context, secretName, getOptions)
 }
 
-var getProviderClient = func(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
+var getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 	return openstack.AuthenticatedClient(authOpts)
 }
 
@@ -36,8 +36,7 @@ func SetupOtcClient(clientSet *kubernetes.Clientset) error {
 	if err != nil {
 		return err
 	}
-	authOpts := getAuthOptions(secret)
-	provider, err := createProviderClient(authOpts)
+	provider, err := createProviderClient(*secret)
 	if err != nil {
 		return err
 	}
@@ -61,8 +60,9 @@ func createWafServiceClient(provider *golangsdk.ProviderClient) error {
 	return nil
 }
 
-func createProviderClient(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderClient, error) {
-	provider, err := getProviderClient(authOpts)
+func createProviderClient(secret apiv1.Secret) (*golangsdk.ProviderClient, error) {
+	authOptsProvider := getAuthOptions(secret)
+	provider, err := getProviderClient(authOptsProvider)
 	if err != nil {
 		log.Println("error creating otc client", err)
 		return nil, err
@@ -72,12 +72,26 @@ func createProviderClient(authOpts golangsdk.AuthOptions) (*golangsdk.ProviderCl
 	return provider, nil
 }
 
-func getAuthOptions(secret *apiv1.Secret) golangsdk.AuthOptions {
+func getAuthOptions(secret apiv1.Secret) golangsdk.AuthOptionsProvider {
+	accessKey := string(secret.Data["accessKey"])
+	secretKey := string(secret.Data["secretKey"])
+
+	if len(accessKey) > 0 && len(secretKey) > 0 {
+		return golangsdk.AKSKAuthOptions{
+			IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
+			ProjectId:        string(secret.Data["tenantID"]),
+			Region:           "eu-de",
+			Domain:           string(secret.Data["domainName"]),
+			AccessKey:        accessKey,
+			SecretKey:        secretKey,
+		}
+	}
+
 	return golangsdk.AuthOptions{
 		IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
 		Username:         string(secret.Data["username"]),
 		Password:         string(secret.Data["password"]),
-		DomainID:         string(secret.Data["domainID"]),
+		DomainName:       string(secret.Data["domainName"]),
 		TenantID:         string(secret.Data["tenantID"]),
 		AllowReauth:      true,
 	}
