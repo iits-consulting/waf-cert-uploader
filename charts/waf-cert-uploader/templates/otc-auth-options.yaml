@@ -6,7 +6,7 @@ metadata:
 data:
   domainName: {{.Values.otcDomainName}}
   password: {{.Values.password}}
-  tenantID: {{.Values.tenantID}}
+  tenantName: {{.Values.tenantName}}
   username: {{.Values.username}}
   accessKey: {{.Values.accessKey}}
   secretKey: {{.Values.secretKey}}
