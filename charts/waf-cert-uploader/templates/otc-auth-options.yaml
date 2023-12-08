@@ -4,8 +4,10 @@ metadata:
   name: otc-auth-options
   namespace: waf
 data:
-  domainID: {{.Values.domainID}}
+  domainName: {{.Values.otcDomainName}}
   password: {{.Values.password}}
   tenantID: {{.Values.tenantID}}
   username: {{.Values.username}}
+  accessKey: {{.Values.accessKey}}
+  secretKey: {{.Values.secretKey}}
 type: Opaque
