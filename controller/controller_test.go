@@ -36,8 +36,8 @@ func TestHandleUploadCertToWaf(t *testing.T) {
 	assert.Equal(t, http.StatusOK, responseRecorder.Code)
 
 	expectedBody := fmt.Sprintf(`{"kind":"UPDATE",`+
-		`"response":{"uid":"%s","allowed":true,"patch":"W3sib3AiOiJhZGQiLCJwYXRoIjoiL21ldGFkYXRhL2xhYmVscy`+
-		`IsInZhbHVlIjp7ImNlcnQtd2FmLWlkIjoiMTIzNDUiLCJ3YWYtZG9tYWluLWlkIjoiNDU2NTYxNjVkYTY1NDU2In19XQ==",`+
+		`"response":{"uid":"%s","allowed":true,"patch":"W3sib3AiOiJhZGQiLCJwYXRoIjoiL21ldGFkYXRhL2Fubm90YXRpb25zI`+
+		`iwidmFsdWUiOnsiY2VydC13YWYtaWQiOiIxMjM0NSIsIndhZi1kb21haW4taWQiOiI0NTY1NjE2NWRhNjU0NTYifX1d",`+
 		`"patchType":"JSONPatch"}}`, requestId)
 	assert.Equal(t, expectedBody, responseRecorder.Body.String())
 }

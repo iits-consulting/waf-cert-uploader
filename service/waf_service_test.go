@@ -16,7 +16,7 @@ func TestCreateOrUpdateCertificate_Create(t *testing.T) {
 	secret := apiv1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			ResourceVersion: "version1",
-			Labels: map[string]string{
+			Annotations: map[string]string{
 				"waf-domain-id": "45656165da65456",
 			},
 		},
@@ -80,7 +80,7 @@ func TestCreateOrUpdateCertificate_Update(t *testing.T) {
 	secret := apiv1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			ResourceVersion: "version1",
-			Labels: map[string]string{
+			Annotations: map[string]string{
 				"cert-waf-id":   "previous-id",
 				"waf-domain-id": "45656165da65456",
 			},

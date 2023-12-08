@@ -122,8 +122,8 @@ func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
 	tlsCertificateBase64 := secret.Data["tls.crt"]
 	tlsKeyBase64 := secret.Data["tls.key"]
 
-	certWafId := secret.Labels["cert-waf-id"]
-	wafDomainId := secret.Labels["waf-domain-id"]
+	certWafId := secret.Annotations["cert-waf-id"]
+	wafDomainId := secret.Annotations["waf-domain-id"]
 
 	//newline must be removed, else waf api fails
 	tlsCertificate := getStringWithoutNewline(string(tlsCertificateBase64))
