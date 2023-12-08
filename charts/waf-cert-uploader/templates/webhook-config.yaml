@@ -3,7 +3,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: cert-uploader
   annotations:
-    cert-manager.io/inject-ca-from: default/cert-uploader-certificate
+    cert-manager.io/inject-ca-from: waf/cert-uploader-certificate
 webhooks:
   - name: cert-uploader.waf.svc
     admissionReviewVersions:

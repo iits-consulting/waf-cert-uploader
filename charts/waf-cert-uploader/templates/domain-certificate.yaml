@@ -1,11 +1,11 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: dev.waf-cert-uploader.iits.tech
+  name: {{ (.Values.dnsNames | first) }}
   namespace: waf
 spec:
   secretTemplate:
-    labels:
+    annotations:
       webhook-enabled: "true"
       waf-domain-id: {{.Values.wafDomainID}}
   secretName: waf-cert-uploader-certificate
@@ -22,9 +22,7 @@ spec:
   usages:
     - server auth
     - client auth
-  dnsNames:
-    - "dev.waf-cert-uploader.iits.tech"
-    - "admin.dev.waf-cert-uploader.iits.tech"
+  dnsNames: {{ .Values.dnsNames }}
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
