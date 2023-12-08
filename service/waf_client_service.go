@@ -79,8 +79,8 @@ func getAuthOptions(secret apiv1.Secret) golangsdk.AuthOptionsProvider {
 	if len(accessKey) > 0 && len(secretKey) > 0 {
 		return golangsdk.AKSKAuthOptions{
 			IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
-			ProjectId:        string(secret.Data["tenantID"]),
 			Region:           "eu-de",
+			ProjectName:      string(secret.Data["tenantName"]),
 			Domain:           string(secret.Data["domainName"]),
 			AccessKey:        accessKey,
 			SecretKey:        secretKey,
@@ -92,7 +92,7 @@ func getAuthOptions(secret apiv1.Secret) golangsdk.AuthOptionsProvider {
 		Username:         string(secret.Data["username"]),
 		Password:         string(secret.Data["password"]),
 		DomainName:       string(secret.Data["domainName"]),
-		TenantID:         string(secret.Data["tenantID"]),
+		TenantName:       string(secret.Data["tenantName"]),
 		AllowReauth:      true,
 	}
 }

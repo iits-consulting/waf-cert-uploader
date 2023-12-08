@@ -35,7 +35,7 @@ func TestSetupOtcClient(t *testing.T) {
 				"username":   []byte("Robin"),
 				"password":   []byte("abc123"),
 				"domainName": []byte("asdf5455fd4"),
-				"tenantID":   []byte("qwer541235g3"),
+				"tenantName": []byte("qwer541235g3"),
 			},
 		}, nil
 	}
@@ -59,7 +59,7 @@ func TestSetupOtcClient(t *testing.T) {
 	assert.Equal(t, "Robin", authOptsSlot.(golangsdk.AuthOptions).Username)
 	assert.Equal(t, "abc123", authOptsSlot.(golangsdk.AuthOptions).Password)
 	assert.Equal(t, "asdf5455fd4", authOptsSlot.(golangsdk.AuthOptions).DomainName)
-	assert.Equal(t, "qwer541235g3", authOptsSlot.(golangsdk.AuthOptions).TenantID)
+	assert.Equal(t, "qwer541235g3", authOptsSlot.(golangsdk.AuthOptions).TenantName)
 	assert.Equal(t, "https://iam.eu-de.otc.t-systems.com:443/v3", authOptsSlot.(golangsdk.AuthOptions).IdentityEndpoint)
 	assert.Equal(t, true, authOptsSlot.(golangsdk.AuthOptions).AllowReauth)
 	assert.Equal(t, providerAddress, providerSlot)
@@ -83,7 +83,7 @@ func TestSetupOtcClient_providerFails(t *testing.T) {
 				"username":   []byte("Robin"),
 				"password":   []byte("abc123"),
 				"domainName": []byte("asdf5455fd4"),
-				"tenantID":   []byte("qwer541235g3"),
+				"tenantName": []byte("qwer541235g3"),
 			},
 		}, nil
 	}
