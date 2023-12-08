@@ -22,7 +22,7 @@ spec:
   usages:
     - server auth
     - client auth
-  dnsNames: {{ .Values.dnsNames }}
+  dnsNames: {{ toYaml .Values.dnsNames | nindent 10 }}
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer

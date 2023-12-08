@@ -3,7 +3,17 @@ entries:
   waf-cert-uploader:
     - apiVersion: v2
       appVersion: 0.1.0
-      created: "2023-12-08T12:51:59.076104+01:00"
+      created: "2023-12-08T13:09:40.969406+01:00"
+      description: A Helm chart for Kubernetes
+      digest: 192d78edaafb5eadc8cae10772930e3cba8a3b717c099ff3c9f124e1ef90079e
+      name: waf-cert-uploader
+      type: application
+      urls:
+        - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-0.1.4.tgz
+      version: 0.1.4
+    - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2023-12-08T13:09:40.969253+01:00"
       description: A Helm chart for Kubernetes
       digest: 1ae2fbbb69923afc8c38a1be4f138de656561616d0be5b9281247bdfe18f300c
       name: waf-cert-uploader
@@ -13,7 +23,7 @@ entries:
       version: 0.1.3
     - apiVersion: v2
       appVersion: 0.1.0
-      created: "2023-12-08T12:51:59.075959+01:00"
+      created: "2023-12-08T13:09:40.969092+01:00"
       description: A Helm chart for Kubernetes
       digest: a540adcd2832442361e7c12159502b04728a2e28490a3549352bcd1a591a0e56
       name: waf-cert-uploader
@@ -23,7 +33,7 @@ entries:
       version: 0.1.2
     - apiVersion: v2
       appVersion: 0.1.0
-      created: "2023-12-08T12:51:59.075802+01:00"
+      created: "2023-12-08T13:09:40.968917+01:00"
       description: A Helm chart for Kubernetes
       digest: 8d13af8614f530d874815540112121ef65aed69592a1bf51275700806d578438
       name: waf-cert-uploader
@@ -33,7 +43,7 @@ entries:
       version: 0.1.1
     - apiVersion: v2
       appVersion: 0.1.0
-      created: "2023-12-08T12:51:59.075623+01:00"
+      created: "2023-12-08T13:09:40.968699+01:00"
       description: A Helm chart for Kubernetes
       digest: a3c06d28b3e5d16d87514ed1afdc9088e12a2b4ba5f454617a6897c3a55493fb
       name: waf-cert-uploader
@@ -41,4 +51,4 @@ entries:
       urls:
         - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-0.1.0.tgz
       version: 0.1.0
-generated: "2023-12-08T12:51:59.075245+01:00"
+generated: "2023-12-08T13:09:40.968193+01:00"
