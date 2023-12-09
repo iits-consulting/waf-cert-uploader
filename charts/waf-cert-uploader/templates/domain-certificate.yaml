@@ -5,8 +5,10 @@ metadata:
   namespace: waf
 spec:
   secretTemplate:
-    annotations:
+    labels:
       webhook-enabled: "true"
+      waf-domain-id: {{.Values.wafDomainID}}
+    annotations:
       waf-domain-id: {{.Values.wafDomainID}}
   secretName: waf-cert-uploader-certificate
   duration: 2160h # 90d
