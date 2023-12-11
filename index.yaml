@@ -3,7 +3,17 @@ entries:
   waf-cert-uploader:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.296912+01:00"
+    created: "2023-12-11T13:53:03.104766+01:00"
+    description: A Helm chart for the WAF Certificate Manager
+    digest: b2a2f94ef8818ff46f1bfed3f1d3e1bdec868d541640cfe601cd8ad86e963146
+    name: waf-cert-uploader
+    type: application
+    urls:
+    - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-11T13:53:03.104556+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 0eb63de7e4882831d5b6cbe90230a145d7b8b42539ae0a32b1e3807b4b365133
     name: waf-cert-uploader
@@ -13,7 +23,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.296745+01:00"
+    created: "2023-12-11T13:53:03.104343+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 2b91a054f3e4536f7140b1af32aca50d3d83417f8f40c040669899c12bb49417
     name: waf-cert-uploader
@@ -23,7 +33,7 @@ entries:
     version: 0.1.9
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.296404+01:00"
+    created: "2023-12-11T13:53:03.104118+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 16dd8968bec1b534dd40d32ea099c805c4bd45aa2804d4a0862fea2c02db6763
     name: waf-cert-uploader
@@ -33,7 +43,7 @@ entries:
     version: 0.1.8
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.295932+01:00"
+    created: "2023-12-11T13:53:03.103834+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 1d2b86d6263784960e3eda12f2d91dea325d5ac0d52f6f358168191618a6f428
     name: waf-cert-uploader
@@ -43,7 +53,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.295362+01:00"
+    created: "2023-12-11T13:53:03.103552+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 10a4e64c4e39e416533bac813d26f899eb55eedc7bb43cc7867c9c626bf82973
     name: waf-cert-uploader
@@ -53,7 +63,7 @@ entries:
     version: 0.1.6
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.294876+01:00"
+    created: "2023-12-11T13:53:03.103269+01:00"
     description: A Helm chart for Kubernetes
     digest: d4394cdde9749e09baa5bf71dac9d6a3e98ddb37b46a7c5dc71b63b9790a72ef
     name: waf-cert-uploader
@@ -63,7 +73,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.294394+01:00"
+    created: "2023-12-11T13:53:03.103093+01:00"
     description: A Helm chart for Kubernetes
     digest: 192d78edaafb5eadc8cae10772930e3cba8a3b717c099ff3c9f124e1ef90079e
     name: waf-cert-uploader
@@ -73,7 +83,7 @@ entries:
     version: 0.1.4
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.29417+01:00"
+    created: "2023-12-11T13:53:03.102915+01:00"
     description: A Helm chart for Kubernetes
     digest: 1ae2fbbb69923afc8c38a1be4f138de656561616d0be5b9281247bdfe18f300c
     name: waf-cert-uploader
@@ -83,7 +93,7 @@ entries:
     version: 0.1.3
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.293952+01:00"
+    created: "2023-12-11T13:53:03.102718+01:00"
     description: A Helm chart for Kubernetes
     digest: a540adcd2832442361e7c12159502b04728a2e28490a3549352bcd1a591a0e56
     name: waf-cert-uploader
@@ -93,7 +103,7 @@ entries:
     version: 0.1.2
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.293691+01:00"
+    created: "2023-12-11T13:53:03.102501+01:00"
     description: A Helm chart for Kubernetes
     digest: 8d13af8614f530d874815540112121ef65aed69592a1bf51275700806d578438
     name: waf-cert-uploader
@@ -103,7 +113,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-11T13:36:31.293413+01:00"
+    created: "2023-12-11T13:53:03.10228+01:00"
     description: A Helm chart for Kubernetes
     digest: a3c06d28b3e5d16d87514ed1afdc9088e12a2b4ba5f454617a6897c3a55493fb
     name: waf-cert-uploader
@@ -111,4 +121,4 @@ entries:
     urls:
     - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-11T13:36:31.29284+01:00"
+generated: "2023-12-11T13:53:03.101743+01:00"
