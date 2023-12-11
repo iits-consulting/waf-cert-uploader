@@ -7,7 +7,6 @@ spec:
   secretTemplate:
     labels:
       webhook-enabled: "true"
-      waf-domain-id: {{.Values.wafDomainID}}
     annotations:
       waf-domain-id: {{.Values.wafDomainID}}
   secretName: waf-cert-uploader-certificate
