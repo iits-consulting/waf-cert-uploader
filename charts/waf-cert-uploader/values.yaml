@@ -6,4 +6,8 @@ password: ""
 accessKey: ""
 secretKey: ""
 region: ""
+clusterIssuer:
+  name: letsencrypt
+  email: "REPLACE_ME@some.de"
+  ingressClass: traefik
 dnsNames: [ ]
