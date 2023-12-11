@@ -98,7 +98,7 @@ func getAdmissionReview() ([]byte, types.UID) {
 	secret := apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			ResourceVersion: "version1",
-			Labels: map[string]string{
+			Annotations: map[string]string{
 				"waf-domain-id": "45656165da65456",
 			},
 		},

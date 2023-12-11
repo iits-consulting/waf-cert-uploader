@@ -29,13 +29,13 @@ func TestMain(m *testing.M) {
 			TenantName:       os.Getenv("OTC_TENANT_NAME"),
 		}
 
-		authProvider = golangsdk.AKSKAuthOptions{
-			IdentityEndpoint: os.Getenv("IAM_IDENTITY_ENDPOINT"),
-			Domain:           os.Getenv("OTC_DOMAIN_NAME"),
-			ProjectName:      os.Getenv("OTC_TENANT_NAME"),
-			AccessKey:        os.Getenv("ACCESS_KEY"),
-			SecretKey:        os.Getenv("SECRET_KEY"),
-		}
+		//authProvider = golangsdk.AKSKAuthOptions{
+		//	IdentityEndpoint: os.Getenv("IAM_IDENTITY_ENDPOINT"),
+		//	Domain:           os.Getenv("OTC_DOMAIN_NAME"),
+		//	ProjectName:      os.Getenv("OTC_TENANT_NAME"),
+		//	AccessKey:        os.Getenv("ACCESS_KEY"),
+		//	SecretKey:        os.Getenv("SECRET_KEY"),
+		//}
 
 		provider, err := openstack.AuthenticatedClient(authProvider)
 		if err != nil {
@@ -88,7 +88,7 @@ func Test_ListCertificates(t *testing.T) {
 }
 
 func Test_GetWafDomain(t *testing.T) {
-	extracted, err := wafDomain.Get(wafClientTest, "143dde125d534f088b5df711ad3fe140").Extract()
+	extracted, err := wafDomain.Get(wafClientTest, "bedfc178b7c0474c93250ea951ce2f93").Extract()
 
 	if err != nil {
 		panic(err)
@@ -100,15 +100,15 @@ func Test_GetWafDomain(t *testing.T) {
 
 func Test_AttachCertToWafDomain(t *testing.T) {
 	opts := wafDomain.UpdateOpts{
-		CertificateId: "1b7eb2febbdf4182ae624caa15058dc6",
+		CertificateId: "9097d08958af4d1caac0d3efb0d27a4c",
 		Server: []wafDomain.ServerOpts{{
 			ClientProtocol: "HTTPS",
 			ServerProtocol: "HTTPS",
-			Address:        "80.158.32.51",
+			Address:        "waf-cert-uploader.iits.tech",
 			Port:           443,
 		}},
 	}
-	updateResult := wafDomain.Update(wafClientTest, "442fb239f66d44c198665c2f4285d129", opts)
+	updateResult := wafDomain.Update(wafClientTest, "bedfc178b7c0474c93250ea951ce2f93", opts)
 
 	extracted, err := updateResult.Extract()
 
@@ -121,7 +121,7 @@ func Test_AttachCertToWafDomain(t *testing.T) {
 
 func Test_DeleteCertificates(t *testing.T) {
 	idsToDelete := []string{
-		"d268c928408c49c6b09236eb31f555e5",
+		"6f47e9defbf643e8bfd64498e527deb4",
 	}
 
 	funk.ForEach(idsToDelete, func(id string) {

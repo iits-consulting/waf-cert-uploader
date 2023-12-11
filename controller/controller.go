@@ -169,7 +169,7 @@ func applyPatchesToAdmissionResponse(admissionReviewResponse v1.AdmissionReview,
 func createCertificateIdPatch(secret apiv1.Secret, id string) (*[]byte, error) {
 	var patches []patchOperation
 
-	annotations := secret.ObjectMeta.Labels
+	annotations := secret.ObjectMeta.Annotations
 	annotations["cert-waf-id"] = id
 
 	patches = append(patches, patchOperation{
