@@ -12,7 +12,6 @@ import (
 	"testing"
 )
 
-var authOpts golangsdk.AuthOptions
 var wafClientTest *golangsdk.ServiceClient
 
 func TestMain(m *testing.M) {
@@ -30,13 +29,13 @@ func TestMain(m *testing.M) {
 			TenantName:       os.Getenv("OTC_TENANT_NAME"),
 		}
 
-		//authProvider = golangsdk.AKSKAuthOptions{
-		//	IdentityEndpoint: os.Getenv("IAM_IDENTITY_ENDPOINT"),
-		//	Domain:           os.Getenv("OTC_DOMAIN_NAME"),
-		//	ProjectName:      os.Getenv("OTC_TENANT_NAME"),
-		//	AccessKey:        os.Getenv("ACCESS_KEY"),
-		//	SecretKey:        os.Getenv("SECRET_KEY"),
-		//}
+		authProvider = golangsdk.AKSKAuthOptions{
+			IdentityEndpoint: os.Getenv("IAM_IDENTITY_ENDPOINT"),
+			Domain:           os.Getenv("OTC_DOMAIN_NAME"),
+			ProjectName:      os.Getenv("OTC_TENANT_NAME"),
+			AccessKey:        os.Getenv("ACCESS_KEY"),
+			SecretKey:        os.Getenv("SECRET_KEY"),
+		}
 
 		provider, err := openstack.AuthenticatedClient(authProvider)
 		if err != nil {
