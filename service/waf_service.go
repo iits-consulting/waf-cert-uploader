@@ -2,14 +2,13 @@ package service
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
 	wafDomain "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/domains"
 	"github.com/thoas/go-funk"
 	apiv1 "k8s.io/api/core/v1"
 	"log"
-	"regexp"
+	"strings"
 	"waf-cert-uploader/adapter"
 )
 
@@ -149,25 +148,21 @@ func uploadNewCertificate(certSecret CertificateSecret) (*string, error) {
 }
 
 func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
-	tlsCertificateBase64 := secret.Data["tls.crt"]
-	tlsKeyBase64 := secret.Data["tls.key"]
+	tlsCertificate := secret.Data["tls.crt"]
+	tlsKey := secret.Data["tls.key"]
 
 	certWafId := secret.Annotations["cert-waf-id"]
 	wafDomainId := secret.Annotations["waf-domain-id"]
 
-	//newline must be removed, else waf api fails
-	tlsCertificate := string(tlsCertificateBase64)
-	tlsKey := string(tlsKeyBase64)
+	trimmedCert := strings.TrimSuffix(string(tlsCertificate), "\n")
+	trimmedKey := strings.TrimSuffix(string(tlsKey), "\n")
 
-	tlsCertificateDecoded, _ := base64.StdEncoding.DecodeString(tlsCertificate)
-	tlsKeyDecoded, _ := base64.StdEncoding.DecodeString(tlsKey)
-
-	certHashString := getCertificateHash(tlsCertificateBase64)
+	certHashString := getCertificateHash(tlsCertificate)
 
 	return CertificateSecret{
 		certName:    certHashString,
-		tlsCert:     string(tlsCertificateDecoded),
-		tlsKey:      string(tlsKeyDecoded),
+		tlsCert:     trimmedCert,
+		tlsKey:      trimmedKey,
 		domainName:  secret.Annotations["cert-manager.io/certificate-name"],
 		certWafId:   certWafId,
 		wafDomainId: wafDomainId,
@@ -179,11 +174,4 @@ func getCertificateHash(tlsCertificateBase64 []byte) string {
 	certHash.Write(tlsCertificateBase64)
 	certHashString := hex.EncodeToString(certHash.Sum(nil))
 	return certHashString
-}
-
-//func replaceLineEndingsWithNewline(stringToConvert string)
-
-func getStringWithoutNewline(stringWithNewline string) string {
-	regex := regexp.MustCompile(`\r?\n`)
-	return regex.ReplaceAllString(stringWithNewline, "")
 }
