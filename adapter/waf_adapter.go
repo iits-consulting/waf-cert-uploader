@@ -30,3 +30,9 @@ var UpdateDomainAndExtract = func(
 	opts wafDomain.UpdateOptsBuilder) (*wafDomain.Domain, error) {
 	return wafDomain.Update(c, domainID, opts).Extract()
 }
+
+var GetWafDomainAndExtract = func(
+	c *golangsdk.ServiceClient,
+	domainID string) (*wafDomain.Domain, error) {
+	return wafDomain.Get(c, domainID).Extract()
+}

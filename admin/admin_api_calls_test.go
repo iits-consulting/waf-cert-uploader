@@ -88,7 +88,7 @@ func Test_ListCertificates(t *testing.T) {
 }
 
 func Test_GetWafDomain(t *testing.T) {
-	extracted, err := wafDomain.Get(wafClientTest, "bedfc178b7c0474c93250ea951ce2f93").Extract()
+	extracted, err := wafDomain.Get(wafClientTest, "").Extract()
 
 	if err != nil {
 		panic(err)
@@ -121,7 +121,14 @@ func Test_AttachCertToWafDomain(t *testing.T) {
 
 func Test_DeleteCertificates(t *testing.T) {
 	idsToDelete := []string{
-		"6f47e9defbf643e8bfd64498e527deb4",
+		"b521c923925c476292e54331ba9e81e3",
+		"2b3b9bf569bb4356b86c3d699f6f0e2b",
+		"eee036d8bc3a4aba84f8f431b49b20bb",
+		"9097d08958af4d1caac0d3efb0d27a4c",
+		"cef22f6aaa21433fbbfe131063f6fab7",
+		"b423c4e522134b53aea700f02f30f59f",
+		"62f392ef3a0341e8978891b4594fe1f0",
+		"3bc0383314424b9cb1c732a2ec236133",
 	}
 
 	funk.ForEach(idsToDelete, func(id string) {

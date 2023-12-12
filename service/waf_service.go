@@ -54,8 +54,15 @@ func CreateOrUpdateCertificate(secret apiv1.Secret) (*string, error) {
 }
 
 func attachCertificateToWafDomain(domainId string, certId string) error {
-	_, err := adapter.UpdateDomainAndExtract(WafClient, domainId, wafDomain.UpdateOpts{
+	newServerOpts, err := getNewServerOpts(domainId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = adapter.UpdateDomainAndExtract(WafClient, domainId, wafDomain.UpdateOpts{
 		CertificateId: certId,
+		Server:        *newServerOpts,
 	})
 	if err != nil {
 		log.Println(err)
@@ -63,6 +70,28 @@ func attachCertificateToWafDomain(domainId string, certId string) error {
 	}
 	log.Printf("certificate %s has been attached to waf domain %s successfully", certId, domainId)
 	return nil
+}
+
+func getNewServerOpts(domainId string) (*[]wafDomain.ServerOpts, error) {
+	existingDomain, err := adapter.GetWafDomainAndExtract(WafClient, domainId)
+	if err != nil {
+		return nil, err
+	}
+	newOpts := []wafDomain.ServerOpts{
+		{
+			ClientProtocol: "HTTPS",
+			ServerProtocol: "HTTPS",
+			Address:        existingDomain.Server[0].Address,
+			Port:           443,
+		},
+		{
+			ClientProtocol: "HTTP",
+			ServerProtocol: "HTTP",
+			Address:        existingDomain.Server[0].Address,
+			Port:           80,
+		},
+	}
+	return &newOpts, nil
 }
 
 func deletePreviousCertificate(id string) {
