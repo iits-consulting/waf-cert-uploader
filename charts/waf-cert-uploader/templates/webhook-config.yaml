@@ -16,7 +16,7 @@ webhooks:
     sideEffects: None
     objectSelector:
       matchLabels:
-        webhook-enabled: {{ .Values.webhookEnabled }}
+        webhook-enabled: {{ .Values.webhookActivated }}
     rules:
       - operations: [ "UPDATE" ]
         apiGroups: [ "" ]
