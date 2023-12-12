@@ -88,7 +88,7 @@ func Test_ListCertificates(t *testing.T) {
 }
 
 func Test_GetWafDomain(t *testing.T) {
-	extracted, err := wafDomain.Get(wafClientTest, "").Extract()
+	extracted, err := wafDomain.Get(wafClientTest, "b1bfb35b9c99419caca7cc8aca4ef20c").Extract()
 
 	if err != nil {
 		panic(err)
@@ -96,6 +96,10 @@ func Test_GetWafDomain(t *testing.T) {
 
 	fmt.Println("host: " + extracted.HostName)
 	fmt.Println("cert id: " + extracted.CertificateId)
+	funk.ForEach(extracted.Server, func(x wafDomain.Server) {
+		fmt.Printf("Address: %s\tClientProtocol: %s\tServerProtocol: %s\tPort: %v \n",
+			x.Address, x.ClientProtocol, x.ServerProtocol, x.Port)
+	})
 }
 
 func Test_AttachCertToWafDomain(t *testing.T) {

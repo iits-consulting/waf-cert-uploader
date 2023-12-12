@@ -2,6 +2,7 @@ package service
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	waf "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/certificates"
 	wafDomain "github.com/opentelekomcloud/gophertelekomcloud/openstack/waf/v1/domains"
@@ -155,15 +156,18 @@ func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
 	wafDomainId := secret.Annotations["waf-domain-id"]
 
 	//newline must be removed, else waf api fails
-	tlsCertificate := getStringWithoutNewline(string(tlsCertificateBase64))
-	tlsKey := getStringWithoutNewline(string(tlsKeyBase64))
+	tlsCertificate := string(tlsCertificateBase64)
+	tlsKey := string(tlsKeyBase64)
+
+	tlsCertificateDecoded, _ := base64.StdEncoding.DecodeString(tlsCertificate)
+	tlsKeyDecoded, _ := base64.StdEncoding.DecodeString(tlsKey)
 
 	certHashString := getCertificateHash(tlsCertificateBase64)
 
 	return CertificateSecret{
 		certName:    certHashString,
-		tlsCert:     tlsCertificate,
-		tlsKey:      tlsKey,
+		tlsCert:     string(tlsCertificateDecoded),
+		tlsKey:      string(tlsKeyDecoded),
 		domainName:  secret.Annotations["cert-manager.io/certificate-name"],
 		certWafId:   certWafId,
 		wafDomainId: wafDomainId,
@@ -176,6 +180,8 @@ func getCertificateHash(tlsCertificateBase64 []byte) string {
 	certHashString := hex.EncodeToString(certHash.Sum(nil))
 	return certHashString
 }
+
+//func replaceLineEndingsWithNewline(stringToConvert string)
 
 func getStringWithoutNewline(stringWithNewline string) string {
 	regex := regexp.MustCompile(`\r?\n`)
