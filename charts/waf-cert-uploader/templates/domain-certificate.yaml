@@ -26,7 +26,8 @@ spec:
   usages:
     - server auth
     - client auth
-  dnsNames: {{ $waf.dnsName }}
+  dnsNames:
+    - {{ $waf.dnsName }}
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
