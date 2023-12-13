@@ -3,7 +3,17 @@ entries:
   waf-cert-uploader:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-13T12:12:56.655372+01:00"
+    created: "2023-12-13T12:58:40.269722+01:00"
+    description: A Helm chart for the WAF Certificate Manager
+    digest: 426a859e0ffa13ffb591003bc19adfa58ba607e0dfd6cdb16df3bddf3d52b15a
+    name: waf-cert-uploader
+    type: application
+    urls:
+    - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-13T12:58:40.26956+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 696c3673014d7a4fc8eea836dcc54e0f3e56505b08812f7e7d2288a6251b5776
     name: waf-cert-uploader
@@ -13,7 +23,7 @@ entries:
     version: 1.1.0
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-13T12:12:56.655196+01:00"
+    created: "2023-12-13T12:58:40.269171+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 39437051ac0dd813dd04a64fa09fa3f19f1d1164fcc52abf9ade62c7a8e473ab
     name: waf-cert-uploader
@@ -21,4 +31,4 @@ entries:
     urls:
     - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-1.0.0.tgz
     version: 1.0.0
-generated: "2023-12-13T12:12:56.654821+01:00"
+generated: "2023-12-13T12:58:40.268603+01:00"
