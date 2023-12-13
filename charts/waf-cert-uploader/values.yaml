@@ -1,8 +1,9 @@
 otcDomainName: ""
-wafDomainID: ""
 tenantName: ""
 username: ""
 password: ""
 accessKey: ""
 secretKey: ""
-dnsNames: [ ]
+waf:
+  - dnsName: ""
+    domainId: ""

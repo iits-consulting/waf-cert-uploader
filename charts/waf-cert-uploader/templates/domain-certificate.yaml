@@ -1,15 +1,18 @@
+{{- $top := . -}}
+{{- range $waf := .Values.waf -}}
+---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ (.Values.dnsNames | first) }}
+  name: {{$waf.dnsName}}
   namespace: waf
 spec:
   secretTemplate:
     labels:
       webhook-enabled: "true"
     annotations:
-      waf-domain-id: {{.Values.wafDomainID}}
-  secretName: waf-cert-uploader-certificate
+      waf-domain-id: {{$waf.domainId}}
+  secretName: {{$waf.dnsName}}
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   subject:
@@ -23,7 +26,8 @@ spec:
   usages:
     - server auth
     - client auth
-  dnsNames: {{ toYaml .Values.dnsNames | nindent 10 }}
+  dnsNames: {{ toYaml $waf.dnsName | nindent 10 }}
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
+{{ end }}
