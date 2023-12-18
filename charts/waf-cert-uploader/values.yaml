@@ -4,6 +4,7 @@ username: ""
 password: ""
 accessKey: ""
 secretKey: ""
+dockerhubAccessToken: ""
 waf:
   - dnsName: ""
     domainId: ""

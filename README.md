@@ -10,11 +10,12 @@ The following arguments must be set:
    
 | Variable Name                                  | Explanation                                                                                                | Example                        |
 |------------------------------------------------|------------------------------------------------------------------------------------------------------------|--------------------------------|
-| `otcDomainName`                                 | The OTC account name                                                                                       | `OTC-EU-DE-00000000`          |
-| `tenantName`                                | Your OTC project name                                                                                          | `eu-de_your_project`          |
+| `otcDomainName`                                 | The OTC account name (Base64 encoded)                                                                      | `OTC-EU-DE-00000000`          |
+| `tenantName`                                | Your OTC project name (Base64 encoded)                                                                          | `eu-de_your_project`          |
 | `email`                                   | The person to be notified on certificate events                                                                  |  `notifyme@telekom.de`        |
-| `access_key`<br /> `secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC<br />(no username and password is needed)                 |                                               |
-| `username`<br /> `password`          | IAM user credentials to be authenticated with OTC<br />(no Ak/Sk must be provided)     |                                                              |
+| `access_key`<br /> `secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC (Base64 encoded)<br />(no username and password is needed)                 |                             |
+| `username`<br /> `password`          | IAM user credentials to be authenticated with OTC (Base64 encoded)<br />(no Ak/Sk must be provided)     |                                             |
+| `dockerhubAccessToken`                  | Access token to the dockerhub repository with the webhook docker image (Base64 encoded)     |                                                              |
 | `waf`                                | A list of WAF domain Ids with their corresponding CNAME record names     |      <pre lang="yaml">[&#13;  {&#13;    dnsName: "my.domain.com",&#13;    domainId: "abc123",&#13;  }&#13;]</pre>|
 
 ## Workflow explanation

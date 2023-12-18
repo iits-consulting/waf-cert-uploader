@@ -3,7 +3,17 @@ entries:
   waf-cert-uploader:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-13T13:03:12.843414+01:00"
+    created: "2023-12-18T17:05:37.19356+01:00"
+    description: A Helm chart for the WAF Certificate Manager
+    digest: 582532cdaf4c8f67f8cc251af4d6f1407b5a734e2b2acfb8fc3431d16241f79c
+    name: waf-cert-uploader
+    type: application
+    urls:
+    - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-18T17:05:37.193397+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: efba7ef1ec23c5d051443b925f1e0c9df144b4c6cbe509e10de9f47ccb6f93ed
     name: waf-cert-uploader
@@ -13,7 +23,7 @@ entries:
     version: 1.1.2
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-13T13:03:12.843257+01:00"
+    created: "2023-12-18T17:05:37.193211+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 426a859e0ffa13ffb591003bc19adfa58ba607e0dfd6cdb16df3bddf3d52b15a
     name: waf-cert-uploader
@@ -23,7 +33,7 @@ entries:
     version: 1.1.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-13T13:03:12.842945+01:00"
+    created: "2023-12-18T17:05:37.192971+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 696c3673014d7a4fc8eea836dcc54e0f3e56505b08812f7e7d2288a6251b5776
     name: waf-cert-uploader
@@ -33,7 +43,7 @@ entries:
     version: 1.1.0
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-12-13T13:03:12.842522+01:00"
+    created: "2023-12-18T17:05:37.192627+01:00"
     description: A Helm chart for the WAF Certificate Manager
     digest: 39437051ac0dd813dd04a64fa09fa3f19f1d1164fcc52abf9ade62c7a8e473ab
     name: waf-cert-uploader
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://iits-consulting.github.io/waf-cert-uploader/waf-cert-uploader-1.0.0.tgz
     version: 1.0.0
-generated: "2023-12-13T13:03:12.840296+01:00"
+generated: "2023-12-18T17:05:37.191822+01:00"
