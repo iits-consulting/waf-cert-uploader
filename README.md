@@ -15,7 +15,7 @@ The following arguments must be set:
 | `email`                                   | The person to be notified on certificate events                                                                  |  `notifyme@telekom.de`        |
 | `access_key`<br /> `secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC (Base64 encoded)<br />(no username and password is needed)                 |                             |
 | `username`<br /> `password`          | IAM user credentials to be authenticated with OTC (Base64 encoded)<br />(no Ak/Sk must be provided)     |                                             |
-| `dockerhubAccessToken`                  | Access token to the dockerhub repository with the webhook docker image (Base64 encoded)     |                                                              |
+| `dockerhub`                          | Username and Access token to the dockerhub repository with the webhook docker image (Base64 encoded)     |     <pre lang="yaml">{&#13;   accessToken: "4564dfsa",&#13;   username: "anyuser",&#13;}</pre>                                                          |
 | `waf`                                | A list of WAF domain Ids with their corresponding CNAME record names     |      <pre lang="yaml">[&#13;  {&#13;    dnsName: "my.domain.com",&#13;    domainId: "abc123",&#13;  }&#13;]</pre>|
 
 ## Workflow explanation
