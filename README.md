@@ -28,6 +28,8 @@ This section provides a comprehensive overview of the implementation details and
      - A **CA certificate** for each CNAME record, containing the corresponding WAF domain ID in the secret template section.
      - A **selfsigned certificate** for the webhook.
  - A **secret** containing OTC-Credentials.
+ - A **service account**, **cluster role** and **cluster role binding** to restrict the type of resources the webhook can see.
+ - A **service** (type ClusterIP) to make the webhook deployment accessible from within the cluster.
  - Deployment of:
      - The webhook, which uploads the certificates to the WAF.
      - Upon startup, the credentials secret is extracted to create an authenticated [gopher provider client](https://github.com/opentelekomcloud/gophertelekomcloud) and a service client for API calls.
