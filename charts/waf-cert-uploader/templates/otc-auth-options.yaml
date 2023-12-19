@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: otc-auth-options
+  namespace: waf
+data:
+  domainName: {{.Values.otcDomainName | b64enc}}
+  password: {{.Values.password | b64enc}}
+  tenantName: {{.Values.tenantName | b64enc}}
+  username: {{.Values.username | b64enc}}
+  accessKey: {{.Values.accessKey | b64enc}}
+  secretKey: {{.Values.secretKey | b64enc}}
+type: Opaque

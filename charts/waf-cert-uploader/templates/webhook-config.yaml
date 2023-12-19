@@ -1,0 +1,24 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: cert-uploader
+  annotations:
+    cert-manager.io/inject-ca-from: waf/cert-uploader
+webhooks:
+  - name: cert-uploader.waf.svc
+    admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: cert-uploader
+        namespace: waf
+        path: "/upload-cert-to-waf"
+    sideEffects: None
+    objectSelector:
+      matchLabels:
+        webhook-enabled: "true"
+    rules:
+      - operations: [ "UPDATE" ]
+        apiGroups: [ "" ]
+        apiVersions: [ "v1" ]
+        resources: [ "secrets" ]

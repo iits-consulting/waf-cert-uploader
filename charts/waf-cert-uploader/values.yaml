@@ -1,0 +1,13 @@
+otcDomainName: ""
+tenantName: ""
+username: ""
+password: ""
+accessKey: ""
+secretKey: ""
+dockerhub:
+  registry: "docker.io"
+  username: anyrobli
+  accessToken: ""
+waf:
+  - dnsName: ""
+    domainId: ""
