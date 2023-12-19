@@ -28,12 +28,11 @@ This section provides a comprehensive overview of the implementation details and
      - The **selfsigned cluster issuer**, responsible for issuing the WAF cert uploader webhook, allowing the communication between the Kubernetes API Server and the webhook.
      - A **CA certificate** for each CNAME record, containing the corresponding WAF domain ID in the secret template section.
      - A **selfsigned certificate** for the webhook.
- - A **secret** containing OTC-Credentials.
- - A **service account**, **cluster role** and **cluster role binding** to restrict the type of resources the webhook can see.
+ - A **secret** containing OTC-Credentials and which is mounted into the webhook container.
  - A **service** (type ClusterIP) to make the webhook deployment accessible from within the cluster.
  - Deployment of:
      - The webhook, which uploads the certificates to the WAF.
-     - Upon startup, the credentials secret is extracted to create an authenticated [gopher provider client](https://github.com/opentelekomcloud/gophertelekomcloud) and a service client for API calls.
+     - Upon startup, the mounted credentials secret is used to create an authenticated [gopher provider client](https://github.com/opentelekomcloud/gophertelekomcloud) and a service client for API calls.
  - **Mutating Webhook Configuration**:
      - Informs the Kubernetes API Server of the events that will trigger an admission review.
      - In this scenario, the API Server monitors updated secrets<br>with the following label: `"webhook-enabled" : "true"`.
