@@ -1,16 +1,22 @@
 package service
 
 import (
-	"context"
 	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"log"
+	"os"
 )
 
 var WafClient *golangsdk.ServiceClient
+
+type OtcAuthOptionsSecret struct {
+	username   string
+	password   string
+	accessKey  string
+	secretKey  string
+	domainName string
+	tenantName string
+}
 
 var newWafV1 = func(
 	provider *golangsdk.ProviderClient,
@@ -18,25 +24,12 @@ var newWafV1 = func(
 	return openstack.NewWAFV1(provider, opts)
 }
 
-var getSecret = func(
-	clientSet kubernetes.Clientset,
-	namespace string,
-	context context.Context,
-	secretName string,
-	getOptions metav1.GetOptions) (*apiv1.Secret, error) {
-	return clientSet.CoreV1().Secrets(namespace).Get(context, secretName, getOptions)
-}
-
 var getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 	return openstack.AuthenticatedClient(authOpts)
 }
 
-func SetupOtcClient(clientSet *kubernetes.Clientset) error {
-	secret, err := getOtcCredentials(clientSet)
-	if err != nil {
-		return err
-	}
-	provider, err := createProviderClient(*secret)
+func SetupOtcClient() error {
+	provider, err := createProviderClient()
 	if err != nil {
 		return err
 	}
@@ -60,9 +53,13 @@ func createWafServiceClient(provider *golangsdk.ProviderClient) error {
 	return nil
 }
 
-func createProviderClient(secret apiv1.Secret) (*golangsdk.ProviderClient, error) {
-	authOptsProvider := getAuthOptions(secret)
-	provider, err := getProviderClient(authOptsProvider)
+func createProviderClient() (*golangsdk.ProviderClient, error) {
+	authOptsProvider, err := getAuthOptions()
+	if err != nil {
+		log.Println("couldn't get auth options", err)
+		return nil, err
+	}
+	provider, err := getProviderClient(*authOptsProvider)
 	if err != nil {
 		log.Println("error creating otc client", err)
 		return nil, err
@@ -72,37 +69,54 @@ func createProviderClient(secret apiv1.Secret) (*golangsdk.ProviderClient, error
 	return provider, nil
 }
 
-func getAuthOptions(secret apiv1.Secret) golangsdk.AuthOptionsProvider {
-	accessKey := string(secret.Data["accessKey"])
-	secretKey := string(secret.Data["secretKey"])
-
-	if len(accessKey) > 0 && len(secretKey) > 0 {
-		return golangsdk.AKSKAuthOptions{
-			IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
-			Region:           "eu-de",
-			ProjectName:      string(secret.Data["tenantName"]),
-			Domain:           string(secret.Data["domainName"]),
-			AccessKey:        accessKey,
-			SecretKey:        secretKey,
-		}
-	}
-
-	return golangsdk.AuthOptions{
-		IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
-		Username:         string(secret.Data["username"]),
-		Password:         string(secret.Data["password"]),
-		DomainName:       string(secret.Data["domainName"]),
-		TenantName:       string(secret.Data["tenantName"]),
-		AllowReauth:      true,
-	}
-}
-
-func getOtcCredentials(clientSet *kubernetes.Clientset) (*apiv1.Secret, error) {
-	secret, err := getSecret(*clientSet, "waf", context.Background(), "otc-auth-options", metav1.GetOptions{})
-
+func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
+	authOptions, err := getAuthOptionsFromMountedSecret()
 	if err != nil {
-		log.Println("error getting kubernetes secrets", err)
 		return nil, err
 	}
-	return secret, nil
+
+	var authOptsProvider golangsdk.AuthOptionsProvider
+	if len(authOptions.accessKey) > 0 && len(authOptions.secretKey) > 0 {
+		authOptsProvider = golangsdk.AKSKAuthOptions{
+			IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
+			Region:           "eu-de",
+			ProjectName:      authOptions.tenantName,
+			Domain:           authOptions.domainName,
+			AccessKey:        authOptions.accessKey,
+			SecretKey:        authOptions.secretKey,
+		}
+		return &authOptsProvider, nil
+	}
+
+	authOptsProvider = golangsdk.AuthOptions{
+		IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
+		Username:         authOptions.username,
+		Password:         authOptions.password,
+		DomainName:       authOptions.domainName,
+		TenantName:       authOptions.tenantName,
+		AllowReauth:      true,
+	}
+	return &authOptsProvider, nil
+}
+
+var getAuthOptionsFromMountedSecret = func() (*OtcAuthOptionsSecret, error) {
+	username, err := os.ReadFile("/etc/otc-auth-options/username")
+	password, err := os.ReadFile("/etc/otc-auth-options/password")
+	accessKey, err := os.ReadFile("/etc/otc-auth-options/accessKey")
+	secretKey, err := os.ReadFile("/etc/otc-auth-options/secretKey")
+	domainName, err := os.ReadFile("/etc/otc-auth-options/domainName")
+	tenantName, err := os.ReadFile("/etc/otc-auth-options/tenantName")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &OtcAuthOptionsSecret{
+		username:   string(username),
+		password:   string(password),
+		accessKey:  string(accessKey),
+		secretKey:  string(secretKey),
+		domainName: string(domainName),
+		tenantName: string(tenantName),
+	}, nil
 }
