@@ -19,11 +19,14 @@ spec:
         - name: cert-uploader-certificates
           secret:
             secretName: cert-uploader-certificate
+        - name: otc-auth-options
+          secret:
+            secretName: otc-auth-options
       imagePullSecrets:
         - name: pull-secret-dockerhub
       containers:
         - name: server
-          image: anyrobli/waf-cert-uploader:latest
+          image: "{{.Values.dockerhub.username}}/waf-cert-uploader:latest"
           ports:
             - name: tls
               containerPort: 8443
@@ -36,11 +39,9 @@ spec:
             - name: cert-uploader-certificates
               readOnly: true
               mountPath: /etc/webhook/certs/
+            - name: otc-auth-options
+              readOnly: true
+              mountPath: /etc/otc-auth-options/
           imagePullPolicy: Always
       nodeSelector:
         kubernetes.io/os: linux
-      serviceAccountName: cert-uploader
-      serviceAccount: cert-uploader
-      securityContext:
-        runAsUser: 1234
-        runAsNonRoot: true
