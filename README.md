@@ -64,4 +64,4 @@ This section provides a comprehensive overview of the implementation details and
 - The admission review is accepted, and the secret is mutated to include an additional annotation with the new certificate ID.
 
 # Workflow chart
-![Workflow](images/certuploader.svg)
+![Workflow](flowchart/certuploader.svg)
