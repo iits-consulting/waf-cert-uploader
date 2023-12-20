@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "app.fullname" . }}-service-cert
+spec:
+  secretName: {{ include "app.fullname" . }}-service-cert
+  commonName: {{.Release.Name}}.{{.Release.Namespace}}.svc
+  dnsNames:
+    - {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc.cluster.local
+    - {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc
+    - {{ include "app.fullname" . }}.{{.Release.Namespace}}
+    - {{ include "app.fullname" . }}
+  issuerRef:
+    kind: ClusterIssuer
+    name: {{ include "app.fullname" . }}

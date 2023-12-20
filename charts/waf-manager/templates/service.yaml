@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.serviceType }}
+  ports:
+    {{- range $name,$values := .Values.ports }}
+    - targetPort: {{$values.port}}
+      name: {{$name}}
+      protocol: {{ $values.protocol }}
+      port: {{$values.port}}
+    {{- end }}
+  selector:
+    {{- include "app.selectorLabels" . | nindent 4 }}

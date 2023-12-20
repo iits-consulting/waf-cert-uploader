@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.onePodForEachNode}}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - {{ include "app.fullname" . }}
+              topologyKey: "kubernetes.io/hostname"
+      {{- end}}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Release.Name }}
+          {{- if .Values.securityContext }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- end }}
+          image: "{{ tpl .Values.image.repository . }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ printf "%s" $key | replace "." "_" | upper | quote }}
+              value: {{ tpl $value $ | quote }}
+            {{- end }}
+          {{- if .Values.envFromSecret}}
+          envFrom:
+            - secretRef:
+                name: {{.Values.envFromSecret}}
+          {{- end }}
+          ports:
+            {{- range $name,$values := .Values.ports }}
+            - name: {{$name}}
+              containerPort: {{ $values.port }}
+              protocol: {{ $values.protocol }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ tpl .Values.health.liveness.path . }}
+              port: {{ .Values.ports.http.port }}
+            initialDelaySeconds: {{ default 20 .Values.health.liveness.initialDelaySeconds }}
+            periodSeconds: 60
+            failureThreshold: {{ default 5 .Values.health.liveness.failureThreshold}}
+          readinessProbe:
+            httpGet:
+              path: {{ tpl .Values.health.readiness.path . }}
+              port: {{ .Values.ports.http.port }}
+            initialDelaySeconds: {{ default 20 .Values.health.readiness.initialDelaySeconds }}
+            periodSeconds: 60
+            failureThreshold: {{ default 5 .Values.health.readiness.failureThreshold}}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.volumeMounts }}
+          volumeMounts:
+              {{- toYaml . | nindent 12 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

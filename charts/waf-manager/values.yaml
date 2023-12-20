@@ -1,0 +1,93 @@
+replicaCount: "2"
+
+image:
+  repository: "docker.io/waf-cert-uploader"
+  pullPolicy: IfNotPresent
+  #set global
+  tag: "latest"
+
+#TODO
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+
+serviceNameShort: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  # fsGroup: 2000
+
+securityContext:
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+
+serviceType: ClusterIP
+
+ports:
+  http:
+    port: 443
+    protocol: TCP
+
+resources:
+  requests:
+    memory: 100M
+    cpu: 10m
+
+
+nodeSelector: {}
+
+tolerations: []
+
+volumes:
+  - name: cert-uploader-certificates
+    secret:
+      secretName: cert-uploader-certificate
+volumeMounts:
+  - name: cert-uploader-certificates
+    readOnly: true
+    mountPath: /etc/webhook/certs/
+
+affinity: {}
+
+health:
+  # override this if you want to change the healthcheck prefix otherwise it take serviceNameShort as the default
+  prefix:
+  liveness:
+    path: "/"
+    initialDelaySeconds: 20
+    failureThreshold: 3
+  readiness:
+    path: "/"
+    initialDelaySeconds: 20
+    failureThreshold: 3
+
+onePodForEachNode: true
+
+env:
+
+#set the secret where to take env from
+envSecretName: waf-manager-otc-auth-credentials
+
+otcAuth:
+  otcDomainName: "REPLACE_ME"
+  password: "REPLACE_ME"
+  tenantName: "REPLACE_ME"
+  username: "REPLACE_ME"
+  accessKey: "REPLACE_ME"
+  secretKey: "REPLACE_ME"
