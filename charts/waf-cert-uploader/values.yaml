@@ -6,11 +6,10 @@ image:
   #set global
   tag: "latest"
 
-#TODO
-imagePullSecrets: []
+
+imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
-
 
 serviceNameShort: ""
 
@@ -18,24 +17,23 @@ serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
-  annotations: {}
+  annotations: { }
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
+podAnnotations: { }
 
 podSecurityContext:
-  # fsGroup: 2000
+# fsGroup: 2000
 
 securityContext:
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 serviceType: ClusterIP
 
@@ -49,21 +47,30 @@ resources:
     memory: 100M
     cpu: 10m
 
+nodeSelector: { }
 
-nodeSelector: {}
+tolerations: [ ]
 
-tolerations: []
+secretNames:
+  serviceCert: &default_service_cert service-cert
+  credentials: &default_credentials otc-auth-credentials
 
 volumes:
-  - name: cert-uploader-certificates
+  - name: service-cert
     secret:
-      secretName: cert-uploader-certificate
+      secretName: *default_service_cert
+  - name: otc-auth-credentials
+    secret:
+      secretName: *default_credentials
 volumeMounts:
-  - name: cert-uploader-certificates
+  - name: service-cert
     readOnly: true
     mountPath: /etc/webhook/certs/
+  - name: otc-auth-credentials
+    readOnly: true
+    mountPath: /etc/otc-auth-options/
 
-affinity: {}
+affinity: { }
 
 health:
   # override this if you want to change the healthcheck prefix otherwise it take serviceNameShort as the default
@@ -78,11 +85,6 @@ health:
     failureThreshold: 3
 
 onePodForEachNode: true
-
-env:
-
-#set the secret where to take env from
-envSecretName: waf-manager-otc-auth-credentials
 
 otcAuth:
   otcDomainName: "REPLACE_ME"

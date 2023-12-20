@@ -3,7 +3,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: {{ include "app.fullname" . }}
   annotations:
-    cert-manager.io/inject-ca-from: "{{.Release.Namespace}}/{{ include "app.fullname" . }}-service-cert"
+    cert-manager.io/inject-ca-from: "{{.Release.Namespace}}/{{ .Values.secretNames.serviceCert }}"
 webhooks:
   - name: {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc
     admissionReviewVersions:
@@ -16,10 +16,9 @@ webhooks:
         path: "/upload-cert-to-waf"
     objectSelector:
       matchLabels:
-        waf-manager.iits.tech/enabled: "true"
+        waf-cert-uploader.iits.tech/enabled: "true"
     rules:
       - operations: [ "UPDATE" ]
         apiGroups: [ "" ]
         apiVersions: [ "v1" ]
-        #TODO type: kubernetes.io/tls possible?
         resources: [ "secrets" ]

@@ -3,7 +3,7 @@ kind: Certificate
 metadata:
   name: {{ include "app.fullname" . }}-service-cert
 spec:
-  secretName: {{ include "app.fullname" . }}-service-cert
+  secretName: {{ .Values.secretNames.serviceCert }}
   commonName: {{.Release.Name}}.{{.Release.Namespace}}.svc
   dnsNames:
     - {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc.cluster.local
