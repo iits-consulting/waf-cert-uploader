@@ -64,14 +64,14 @@ spec:
               path: {{ tpl .Values.health.liveness.path . }}
               port: {{ .Values.ports.http.port }}
             initialDelaySeconds: {{ default 20 .Values.health.liveness.initialDelaySeconds }}
-            periodSeconds: 60
+            periodSeconds: 5
             failureThreshold: {{ default 5 .Values.health.liveness.failureThreshold}}
           readinessProbe:
             httpGet:
               path: {{ tpl .Values.health.readiness.path . }}
               port: {{ .Values.ports.http.port }}
             initialDelaySeconds: {{ default 20 .Values.health.readiness.initialDelaySeconds }}
-            periodSeconds: 60
+            periodSeconds: 5
             failureThreshold: {{ default 5 .Values.health.readiness.failureThreshold}}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

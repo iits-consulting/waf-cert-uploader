@@ -83,11 +83,11 @@ health:
   prefix:
   liveness:
     path: "/health"
-    initialDelaySeconds: 20
+    initialDelaySeconds: 5
     failureThreshold: 3
   readiness:
     path: "/health"
-    initialDelaySeconds: 20
+    initialDelaySeconds: 5
     failureThreshold: 3
 
 onePodForEachNode: true

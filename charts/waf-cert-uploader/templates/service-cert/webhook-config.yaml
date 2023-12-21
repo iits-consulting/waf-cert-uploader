@@ -3,7 +3,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: {{ include "app.fullname" . }}
   annotations:
-    cert-manager.io/inject-ca-from: "{{.Release.Namespace}}/{{ .Values.secretNames.serviceCert }}"
+    cert-manager.io/inject-ca-from: "{{.Release.Namespace}}/{{ include "app.fullname" . }}-service-cert"
 webhooks:
   - name: {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc
     admissionReviewVersions:

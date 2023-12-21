@@ -31,10 +31,12 @@ func main() {
 
 	http.HandleFunc("/health", controller.HandleHealth)
 	http.HandleFunc("/upload-cert-to-waf", controller.HandleUploadCertToWaf)
-	err = http.ListenAndServe(":"+httpPort, nil)
-	if err != nil {
-		log.Println("http server failed: ", err)
-	}
+	go func() {
+		err = http.ListenAndServe(":"+httpPort, nil)
+		if err != nil {
+			log.Println("http server failed: ", err)
+		}
+	}()
 	err = http.ListenAndServeTLS(":"+httpsPort, parameters.certFile, parameters.keyFile, nil)
 	if err != nil {
 		log.Println("https server failed: ", err)
