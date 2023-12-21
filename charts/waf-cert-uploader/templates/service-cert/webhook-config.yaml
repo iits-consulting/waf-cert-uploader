@@ -14,6 +14,7 @@ webhooks:
         name: {{ include "app.fullname" . }}
         namespace: {{.Release.Namespace}}
         path: "/upload-cert-to-waf"
+        port: {{ .Values.ports.https.port }}
     objectSelector:
       matchLabels:
         waf-cert-uploader.iits.tech/enabled: "true"

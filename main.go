@@ -51,7 +51,7 @@ func flagWebhookParameters() {
 	flag.StringVar(
 		&parameters.keyFile,
 		"tlsKeyFile",
-		certMountPath+"tls.crt",
+		certMountPath+"tls.key",
 		"File containing the x509 private key to --tlsCertFile.")
 	flag.Parse()
 }
