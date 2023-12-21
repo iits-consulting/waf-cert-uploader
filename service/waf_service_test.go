@@ -18,7 +18,7 @@ func TestCreateOrUpdateCertificate_Create(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			ResourceVersion: "version1",
 			Annotations: map[string]string{
-				"waf-domain-id": "45656165da65456",
+				"waf-cert-uploader.iits.tech/waf-domain-id": "45656165da65456",
 			},
 		},
 		Data: map[string][]byte{
@@ -104,8 +104,8 @@ func TestCreateOrUpdateCertificate_Update(t *testing.T) {
 		ObjectMeta: v1.ObjectMeta{
 			ResourceVersion: "version1",
 			Annotations: map[string]string{
-				"cert-waf-id":   "previous-id",
-				"waf-domain-id": "45656165da65456",
+				"waf-cert-uploader.iits.tech/cert-waf-id":   "previous-id",
+				"waf-cert-uploader.iits.tech/waf-domain-id": "45656165da65456",
 			},
 		},
 		Data: map[string][]byte{

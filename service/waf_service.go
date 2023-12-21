@@ -151,8 +151,8 @@ func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
 	tlsCertificate := secret.Data["tls.crt"]
 	tlsKey := secret.Data["tls.key"]
 
-	certWafId := secret.Annotations["cert-waf-id"]
-	wafDomainId := secret.Annotations["waf-domain-id"]
+	certWafId := secret.Annotations["waf-cert-uploader.iits.tech/cert-waf-id"]
+	wafDomainId := secret.Annotations["waf-cert-uploader.iits.tech/waf-domain-id"]
 
 	trimmedCert := strings.TrimSuffix(string(tlsCertificate), "\n")
 	trimmedKey := strings.TrimSuffix(string(tlsKey), "\n")

@@ -36,8 +36,9 @@ func TestHandleUploadCertToWaf(t *testing.T) {
 	assert.Equal(t, http.StatusOK, responseRecorder.Code)
 
 	expectedBody := fmt.Sprintf(`{"kind":"UPDATE",`+
-		`"response":{"uid":"%s","allowed":true,"patch":"W3sib3AiOiJhZGQiLCJwYXRoIjoiL21ldGFkYXRhL2Fubm90YXRpb25zI`+
-		`iwidmFsdWUiOnsiY2VydC13YWYtaWQiOiIxMjM0NSIsIndhZi1kb21haW4taWQiOiI0NTY1NjE2NWRhNjU0NTYifX1d",`+
+		`"response":{"uid":"%s","allowed":true,"patch":"W3sib3AiOiJhZGQiLCJwYXRoIjoiL21ldGFkYXRhL2Fubm90YXRp`+
+		`b25zIiwidmFsdWUiOnsid2FmLWNlcnQtdXBsb2FkZXIuaWl0cy50ZWNoL2NlcnQtd2FmLWlkIjoiMTIzNDUiLCJ3YWYtY2VydC11`+
+		`cGxvYWRlci5paXRzLnRlY2gvd2FmLWRvbWFpbi1pZCI6IjQ1NjU2MTY1ZGE2NTQ1NiJ9fV0=",`+
 		`"patchType":"JSONPatch"}}`, requestId)
 	assert.Equal(t, expectedBody, responseRecorder.Body.String())
 }
@@ -99,7 +100,7 @@ func getAdmissionReview() ([]byte, types.UID) {
 		ObjectMeta: metav1.ObjectMeta{
 			ResourceVersion: "version1",
 			Annotations: map[string]string{
-				"waf-domain-id": "45656165da65456",
+				"waf-cert-uploader.iits.tech/waf-domain-id": "45656165da65456",
 			},
 		},
 		Data: map[string][]byte{

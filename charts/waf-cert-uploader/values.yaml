@@ -3,14 +3,11 @@ replicaCount: "2"
 image:
   repository: "docker.io/waf-cert-uploader"
   pullPolicy: IfNotPresent
-  #set global
   tag: "latest"
-
 
 imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
-
 serviceNameShort: ""
 
 serviceAccount:
@@ -38,8 +35,11 @@ securityContext:
 serviceType: ClusterIP
 
 ports:
+  https:
+    port: &default_https_port 8443
+    protocol: TCP
   http:
-    port: 443
+    port: &default_http_port 8080
     protocol: TCP
 
 resources:
@@ -65,31 +65,37 @@ volumes:
 volumeMounts:
   - name: service-cert
     readOnly: true
-    mountPath: /etc/webhook/certs/
+    mountPath: &default_cert_mount_path /etc/webhook/certs/
   - name: otc-auth-credentials
     readOnly: true
-    mountPath: /etc/otc-auth-options/
+    mountPath: &default_credentials_mount_path /etc/otc-auth-options/
 
 affinity: { }
+
+env:
+  CERT_MOUNT_PATH: *default_cert_mount_path
+  CREDENTIALS_MOUNT_PATH: *default_credentials_mount_path
+  HTTP_PORT: *default_http_port
+  HTTPS_PORT: *default_https_port
 
 health:
   # override this if you want to change the healthcheck prefix otherwise it take serviceNameShort as the default
   prefix:
   liveness:
-    path: "/"
+    path: "/health"
     initialDelaySeconds: 20
     failureThreshold: 3
   readiness:
-    path: "/"
+    path: "/health"
     initialDelaySeconds: 20
     failureThreshold: 3
 
 onePodForEachNode: true
 
 otcAuth:
-  otcDomainName: "REPLACE_ME"
-  password: "REPLACE_ME"
-  tenantName: "REPLACE_ME"
-  username: "REPLACE_ME"
-  accessKey: "REPLACE_ME"
-  secretKey: "REPLACE_ME"
+  otcDomainName: ""
+  password: ""
+  tenantName: ""
+  username: ""
+  accessKey: ""
+  secretKey: ""

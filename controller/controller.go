@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	v1 "k8s.io/api/admission/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -170,7 +171,7 @@ func createCertificateIdPatch(secret apiv1.Secret, id string) (*[]byte, error) {
 	var patches []patchOperation
 
 	annotations := secret.ObjectMeta.Annotations
-	annotations["cert-waf-id"] = id
+	annotations["waf-cert-uploader.iits.tech/cert-waf-id"] = id
 
 	patches = append(patches, patchOperation{
 		Op:    "add",
@@ -193,4 +194,8 @@ func marshal(any interface{}) (*[]byte, error) {
 		return nil, err
 	}
 	return &bytes, nil
+}
+
+func HandleHealth(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, "service is up!")
 }

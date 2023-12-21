@@ -100,12 +100,13 @@ func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
 }
 
 var getAuthOptionsFromMountedSecret = func() (*OtcAuthOptionsSecret, error) {
-	username, err := os.ReadFile("/etc/otc-auth-options/username")
-	password, err := os.ReadFile("/etc/otc-auth-options/password")
-	accessKey, err := os.ReadFile("/etc/otc-auth-options/accessKey")
-	secretKey, err := os.ReadFile("/etc/otc-auth-options/secretKey")
-	domainName, err := os.ReadFile("/etc/otc-auth-options/domainName")
-	tenantName, err := os.ReadFile("/etc/otc-auth-options/tenantName")
+	credentialsMountPath := os.Getenv("CREDENTIALS_MOUNT_PATH")
+	username, err := os.ReadFile(credentialsMountPath + "username")
+	password, err := os.ReadFile(credentialsMountPath + "password")
+	accessKey, err := os.ReadFile(credentialsMountPath + "accessKey")
+	secretKey, err := os.ReadFile(credentialsMountPath + "secretKey")
+	domainName, err := os.ReadFile(credentialsMountPath + "domainName")
+	tenantName, err := os.ReadFile(credentialsMountPath + "tenantName")
 
 	if err != nil {
 		return nil, err

@@ -48,6 +48,11 @@ spec:
           {{- end }}
           image: "{{ tpl .Values.image.repository . }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ printf "%s" $key | replace "." "_" | upper | quote }}
+              value: {{ tpl ($value | toString) $ | quote }}
+            {{- end }}
           ports:
             {{- range $name,$values := .Values.ports }}
             - name: {{$name}}

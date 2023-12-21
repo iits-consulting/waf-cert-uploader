@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"strconv"
+	"os"
 	"waf-cert-uploader/controller"
 	"waf-cert-uploader/service"
 )
@@ -26,25 +26,32 @@ func main() {
 		return
 	}
 
+	httpPort := os.Getenv("HTTP_PORT")
+	httpsPort := os.Getenv("HTTPS_PORT")
+
+	http.HandleFunc("/health", controller.HandleHealth)
 	http.HandleFunc("/upload-cert-to-waf", controller.HandleUploadCertToWaf)
-	addr := ":" + strconv.Itoa(parameters.port)
-	err = http.ListenAndServeTLS(addr, parameters.certFile, parameters.keyFile, nil)
+	err = http.ListenAndServe(":"+httpPort, nil)
+	if err != nil {
+		log.Println("http server failed: ", err)
+	}
+	err = http.ListenAndServeTLS(":"+httpsPort, parameters.certFile, parameters.keyFile, nil)
 	if err != nil {
 		log.Println("https server failed: ", err)
 	}
 }
 
 func flagWebhookParameters() {
-	flag.IntVar(&parameters.port, "port", 8443, "Webhook server port.")
+	certMountPath := os.Getenv("CERT_MOUNT_PATH")
 	flag.StringVar(
 		&parameters.certFile,
 		"tlsCertFile",
-		"/etc/webhook/certs/tls.crt",
+		certMountPath+"tls.crt",
 		"File containing the x509 Certificate for HTTPS.")
 	flag.StringVar(
 		&parameters.keyFile,
 		"tlsKeyFile",
-		"/etc/webhook/certs/tls.key",
+		certMountPath+"tls.crt",
 		"File containing the x509 private key to --tlsCertFile.")
 	flag.Parse()
 }
