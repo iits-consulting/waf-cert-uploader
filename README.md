@@ -15,6 +15,7 @@ In order to be able to use the webhook, a Kubernetes Cluster with the following 
 - **waf-cert-uploader helm chart** installs the webhook as well as its dependencies
 - **docker pull secret** a secret to be able to pull the waf-cert-uploader docker image from the given repository
 - **certificate secret** wich will trigger an admission review if it's changed
+- **Ingress Controller** e.h. traefik or nginx
 
 ## Helm chart configuration
 
@@ -68,11 +69,58 @@ resource "helm_release" "waf-cert-uploader" {
 ```
 
 ## Deploy a Certificate
-//Todo
+After the helm chart is deployed, a TLS secret with the following annotation and label is needed:
+1. waf-cert-uploader.iits.tech/waf-domain-id: "any-domain-id"
+2. waf-cert-uploader.iits.tech/enabled: "true"
+
+Example:
+```yaml
+apiVersion: v1
+type: kubernetes.io/tls
+kind: Secret
+metadata:
+  name: oidc-forward-auth-cert
+  annotations:
+    waf-cert-uploader.iits.tech/waf-domain-id: "any-domain-id"
+  labels:
+    waf-cert-uploader.iits.tech/enabled: "true"
+data:
+  tls.crt: certificate-content-in-base64
+  tls.key: certificate-key-in-base64
+```
+
+Alternatively, it is also possible to deploy a **cert-manager** certificate. The annotation and label are automatically transferred to a new secret after the certificate chain is received and stored.
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my.domain.com
+  namespace: waf
+spec:
+  secretTemplate:
+    labels:
+      waf-cert-uploader.iits.tech/enabled: "true"
+    annotations:
+      waf-cert-uploader.iits.tech/waf-domain-id: "any-domain-id"
+  secretName: my.domain.com
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - my.domain.com
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+```
 
 
 ## Workflow explanation
-This section provides a comprehensive overview of the implementation details and the realization of the aforementioned function.
+This section provides a comprehensive overview of the implementation details. In this scenario, the TLS domain certificate is automatically created and updated by *cert-manager*.
 
 ### Creation of resources in the **Kubernetes Cluster (CCE)**
 
