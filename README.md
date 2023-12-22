@@ -9,10 +9,16 @@ An example project and the usage guide for the helm chart can be found [here](ht
 
 This documentation demonstrates how the WAF certificate uploader can be configured and deployed to manage certificates automatically in the WAF. The helm chart enables the automatic process of generating and attaching certificates to a given set of WAF domains, including their renewal process.
 
-## Usage & Configuration
+## Requirements
+In order to be able to use the webhook, a Kubernetes Cluster with the following components is needed:
+- **cert-manager** needed to generate a self signed certificate so that the Kubernetes API Server can communicate with the webhook via https.
+- **waf-cert-uploader helm chart** installs the webhook as well as its dependencies
+- **docker pull secret** a secret to be able to pull the waf-cert-uploader docker image from the given repository
+- **certificate secret** wich will trigger an admission review if it's changed
 
-The helm chart can, for example, be deployed by terraform as described [here](https://github.com/iits-consulting/otc-terraform-template).
-The following arguments can or must be set:
+## Helm chart configuration
+
+The following table shows the most important configuration parameters of the helm chart:
 
 | Variable Name                                  | Explanation                                                                                                | Example                        |
 |------------------------------------------------|------------------------------------------------------------------------------------------------------------|--------------------------------|
@@ -60,6 +66,10 @@ resource "helm_release" "waf-cert-uploader" {
   ])
 }
 ```
+
+## Deploy a Certificate
+//Todo
+
 
 ## Workflow explanation
 This section provides a comprehensive overview of the implementation details and the realization of the aforementioned function.
