@@ -12,17 +12,54 @@ This documentation demonstrates how the WAF certificate uploader can be configur
 ## Usage & Configuration
 
 The helm chart can, for example, be deployed by terraform as described [here](https://github.com/iits-consulting/otc-terraform-template).
-The following arguments must be set:
+The following arguments can or must be set:
 
 | Variable Name                                  | Explanation                                                                                                | Example                        |
 |------------------------------------------------|------------------------------------------------------------------------------------------------------------|--------------------------------|
-| `otcDomainName`                                 | The OTC account name                                                                  | `OTC-EU-DE-00000000`          |
-| `tenantName`                                | Your OTC project name                                                                          | `eu-de_your_project`          |
-| `email`                                   | The person to be notified on certificate events                                                                  |  `notifyme@telekom.de`        |
-| `access_key`<br /> `secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC<br />(no username and password is needed)                 |                             |
-| `username`<br /> `password`          | IAM user credentials to be authenticated with OTC<br />(no Ak/Sk must be provided)     |                                             |
-| `dockerhub`                          | Username and Access token to the dockerhub repository with the webhook docker image  |     <pre lang="yaml">{&#13;   accessToken: "4564dfsa",&#13;   username: "anyuser",&#13;}</pre>                                                          |
-| `waf`                                | A list of WAF domain Ids with their corresponding CNAME record names     |      <pre lang="yaml">[&#13;  {&#13;    dnsName: "my.domain.com",&#13;    domainId: "abc123",&#13;  }&#13;]</pre>|
+| `otcAuth.otcDomainName`                              | **REQUIRED** The OTC account name                                                                  | `OTC-EU-DE-00000000`          |
+| `otcAuth.tenantName`                                | **REQUIRED** Your OTC project name                                                                          | `eu-de_your_project`          |
+| `otcAuth.region`                                   | **REQUIRED** Your project region                                                                  |  `eu-de`        |
+| `otcAuth.access_key`<br /> `otcAuth.secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC<br />(no username and password is needed)                 |                             |
+| `otcAuth.username`<br /> `otcAuth.password`          | IAM user credentials to be authenticated with OTC<br />(no AK/SK must be provided)     |                                             |
+| `imagePullSecrets`                          | **REQUIRED** List with names of docker pull secrets to inject into the deployment  |     <pre lang="yaml">[&#13;  {&#13;    name: "pull-secret-dockerhub" &#13;  }&#13;]</pre>                                                          |
+| `image.repository`                          | **OPTIONAL** Repository, tag and pull policy of the webhook docker image  |   `docker.io/waf-cert-uploader`                                                       |
+| `image.tag`                          | **OPTIONAL** Repository, tag and pull policy of the webhook docker image  |    `latest`                                             |
+| `image.pullPolicy`                          | **OPTIONAL** Image pull policy  |    `Always`                                             |
+
+## Example Chart
+The helm chart can for example be deployed with terraform:
+
+```tf
+resource "helm_release" "waf-cert-uploader" {
+  name             = "waf-cert-uploader"
+  chart            = "path/to/chart/waf-cert-uploader-1.3.9.tgz"
+  namespace        = "waf"
+  create_namespace = true
+  values = sensitive([
+    yamlencode({
+      otcAuth = {
+        otcDomainName = "OTC-EU-DE-00000000"
+        username      = "my-username"
+        password      = "my-password"
+        tenantName    = "eu-de_my-project"
+        region        = "eu-de"
+        accessKey     = "my-ak-if-no-username-and-password"
+        secretKey     = "my-sk-if-no-username-and-password"
+      }
+      image = {
+        repository = "docker.io/waf-cert-uploader"
+        pullPolicy = "Always"
+        tag        = "latest"
+      }
+      imagePullSecrets = [
+        {
+          name = "pull-secret-dockerhub"
+        }
+      ]
+    })
+  ])
+}
+```
 
 ## Workflow explanation
 This section provides a comprehensive overview of the implementation details and the realization of the aforementioned function.
