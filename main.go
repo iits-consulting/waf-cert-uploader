@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -18,33 +19,58 @@ type ServerParameters struct {
 var parameters ServerParameters
 
 func main() {
-	flagWebhookParameters()
+	err := flagWebhookParameters()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	err := service.SetupOtcClient()
+	err = service.SetupOtcClient()
 	if err != nil {
 		log.Println("otc client setup failed", err)
 		return
 	}
 
-	httpPort := os.Getenv("HTTP_PORT")
-	httpsPort := os.Getenv("HTTPS_PORT")
+	registerHttpControllers()
+	setupHttpServers()
+}
 
+func registerHttpControllers() {
 	http.HandleFunc("/health", controller.HandleHealth)
 	http.HandleFunc("/upload-cert-to-waf", controller.HandleUploadCertToWaf)
+}
+
+func setupHttpServers() {
+	httpPort, httpsPort, err := lookupPorts()
+	if err != nil {
+		return
+	}
 	go func() {
-		err = http.ListenAndServe(":"+httpPort, nil)
+		err = http.ListenAndServe(":"+*httpPort, nil)
 		if err != nil {
 			log.Println("http server failed: ", err)
 		}
 	}()
-	err = http.ListenAndServeTLS(":"+httpsPort, parameters.certFile, parameters.keyFile, nil)
+	err = http.ListenAndServeTLS(":"+*httpsPort, parameters.certFile, parameters.keyFile, nil)
 	if err != nil {
 		log.Println("https server failed: ", err)
 	}
 }
 
-func flagWebhookParameters() {
-	certMountPath := os.Getenv("CERT_MOUNT_PATH")
+func lookupPorts() (*string, *string, error) {
+	httpPort, httpFound := os.LookupEnv("HTTP_PORT")
+	httpsPort, httpsFound := os.LookupEnv("HTTPS_PORT")
+	if !(httpFound && httpsFound) {
+		return nil, nil, errors.New("environment variables for http and https ports were not set")
+	}
+	return &httpPort, &httpsPort, nil
+}
+
+func flagWebhookParameters() error {
+	certMountPath, foundMountPath := os.LookupEnv("CERT_MOUNT_PATH")
+	if !foundMountPath {
+		return errors.New("mount path environment variable was not set")
+	}
 	flag.StringVar(
 		&parameters.certFile,
 		"tlsCertFile",
@@ -56,4 +82,5 @@ func flagWebhookParameters() {
 		certMountPath+"tls.key",
 		"File containing the x509 private key to --tlsCertFile.")
 	flag.Parse()
+	return nil
 }

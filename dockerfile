@@ -1,12 +1,17 @@
-FROM golang:1.21.5
+FROM golang:1.21-alpine AS build
 
-WORKDIR /app
+ARG CGO=0
+ENV CGO_ENABLED=${CGO}
+ENV GOOS=linux
+ENV GO111MODULE=on
 
-COPY go.* ./
-RUN go mod download
+WORKDIR /go/src/github.com/iits-consulting/waf-cert-uploader
+COPY . /go/src/github.com/iits-consulting/waf-cert-uploader
 
-COPY . ./
+RUN go build -o waf-cert-uploader main.go && \
+    mv waf-cert-uploader /usr/local/bin
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /waf-cert-uploader ./
-
-CMD ["/waf-cert-uploader"]
+FROM alpine:3.19
+COPY --from=build /usr/local/bin/waf-cert-uploader /usr/bin/waf-cert-uploader
+EXPOSE 39100
+ENTRYPOINT [ "waf-cert-uploader" ]

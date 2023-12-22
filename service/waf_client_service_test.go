@@ -14,15 +14,17 @@ func TestSetupOtcClient(t *testing.T) {
 	var endpointOptsSlot golangsdk.EndpointOpts
 	var serviceClientSlot *golangsdk.ServiceClient
 
-	getAuthOptionsFromMountedSecret = func() (*OtcAuthOptionsSecret, error) {
-		return &OtcAuthOptionsSecret{
+	getAuthOptionsFromMountedSecret = func() error {
+		authOptions = OtcAuthOptionsSecret{
 			username:   "Robin",
 			password:   "abc123",
 			accessKey:  "",
 			secretKey:  "",
 			domainName: "asdf5455fd4",
 			tenantName: "qwer541235g3",
-		}, nil
+			region:     "eu-de",
+		}
+		return nil
 	}
 	getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 		authOptsSlot = authOpts
@@ -54,8 +56,9 @@ func TestSetupOtcClient(t *testing.T) {
 
 func TestSetupOtcClient_providerFails(t *testing.T) {
 
-	getAuthOptionsFromMountedSecret = func() (*OtcAuthOptionsSecret, error) {
-		return &OtcAuthOptionsSecret{}, nil
+	getAuthOptionsFromMountedSecret = func() error {
+		authOptions = OtcAuthOptionsSecret{}
+		return nil
 	}
 	getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 		return nil, errors.New("auth fail")
@@ -68,8 +71,9 @@ func TestSetupOtcClient_providerFails(t *testing.T) {
 
 func TestSetupOtcClient_wafClientFails(t *testing.T) {
 
-	getAuthOptionsFromMountedSecret = func() (*OtcAuthOptionsSecret, error) {
-		return &OtcAuthOptionsSecret{}, nil
+	getAuthOptionsFromMountedSecret = func() error {
+		authOptions = OtcAuthOptionsSecret{}
+		return nil
 	}
 	getProviderClient = func(authOpts golangsdk.AuthOptionsProvider) (*golangsdk.ProviderClient, error) {
 		provider := golangsdk.ProviderClient{}

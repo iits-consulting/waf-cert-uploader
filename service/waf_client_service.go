@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
 	"log"
@@ -16,7 +18,10 @@ type OtcAuthOptionsSecret struct {
 	secretKey  string
 	domainName string
 	tenantName string
+	region     string
 }
+
+var authOptions OtcAuthOptionsSecret
 
 var newWafV1 = func(
 	provider *golangsdk.ProviderClient,
@@ -41,7 +46,7 @@ func SetupOtcClient() error {
 }
 
 func createWafServiceClient(provider *golangsdk.ProviderClient) error {
-	opts := golangsdk.EndpointOpts{Region: "eu-de"}
+	opts := golangsdk.EndpointOpts{Region: authOptions.region}
 	var err error
 	WafClient, err = newWafV1(provider, opts)
 
@@ -70,16 +75,17 @@ func createProviderClient() (*golangsdk.ProviderClient, error) {
 }
 
 func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
-	authOptions, err := getAuthOptionsFromMountedSecret()
+	err := getAuthOptionsFromMountedSecret()
 	if err != nil {
 		return nil, err
 	}
 
 	var authOptsProvider golangsdk.AuthOptionsProvider
+	identityEndpoint := fmt.Sprintf("https://iam.%s.otc.t-systems.com:443/v3", authOptions.region)
 	if len(authOptions.accessKey) > 0 && len(authOptions.secretKey) > 0 {
 		authOptsProvider = golangsdk.AKSKAuthOptions{
-			IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
-			Region:           "eu-de",
+			IdentityEndpoint: identityEndpoint,
+			Region:           authOptions.region,
 			ProjectName:      authOptions.tenantName,
 			Domain:           authOptions.domainName,
 			AccessKey:        authOptions.accessKey,
@@ -89,7 +95,7 @@ func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
 	}
 
 	authOptsProvider = golangsdk.AuthOptions{
-		IdentityEndpoint: "https://iam.eu-de.otc.t-systems.com:443/v3",
+		IdentityEndpoint: identityEndpoint,
 		Username:         authOptions.username,
 		Password:         authOptions.password,
 		DomainName:       authOptions.domainName,
@@ -99,25 +105,31 @@ func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
 	return &authOptsProvider, nil
 }
 
-var getAuthOptionsFromMountedSecret = func() (*OtcAuthOptionsSecret, error) {
-	credentialsMountPath := os.Getenv("CREDENTIALS_MOUNT_PATH")
+var getAuthOptionsFromMountedSecret = func() error {
+	credentialsMountPath, foundMountPath := os.LookupEnv("CREDENTIALS_MOUNT_PATH")
+	if !foundMountPath {
+		return errors.New("environment variable for the credentials mount path was not found")
+	}
 	username, err := os.ReadFile(credentialsMountPath + "username")
 	password, err := os.ReadFile(credentialsMountPath + "password")
 	accessKey, err := os.ReadFile(credentialsMountPath + "accessKey")
 	secretKey, err := os.ReadFile(credentialsMountPath + "secretKey")
 	domainName, err := os.ReadFile(credentialsMountPath + "domainName")
 	tenantName, err := os.ReadFile(credentialsMountPath + "tenantName")
+	region, err := os.ReadFile(credentialsMountPath + "region")
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &OtcAuthOptionsSecret{
+	authOptions = OtcAuthOptionsSecret{
 		username:   string(username),
 		password:   string(password),
 		accessKey:  string(accessKey),
 		secretKey:  string(secretKey),
 		domainName: string(domainName),
 		tenantName: string(tenantName),
-	}, nil
+		region:     string(region),
+	}
+	return nil
 }
