@@ -1,21 +1,21 @@
 # WAF cert uploader
 
-This service is a kubernetes mutating webhook. It manages certificates for a set of given domain names and
+This service is a **Kubernetes Mutating Webhook**. It manages certificates for a set of given domain names and
 attaches them to a [Web Application Firewall (WAF)](https://docs.otc.t-systems.com/web-application-firewall/index.html) in [Open Telekom Cloud (OTC)](https://open-telekom-cloud.com/).
-It is intended to be used together with a set of kubernetes resources and thus needs to be deployed via a [helm chart](https://github.com/iits-consulting/waf-cert-uploader/tree/gh-pages).
-An example project and the usage guide for the helm chart can be found [here](https://github.com/iits-consulting/waf-cert-uploader-terraform).
+It is intended to be used together with a set of **Kubernetes** resources and thus needs to be deployed via a [Helm Chart](https://github.com/iits-consulting/waf-cert-uploader/tree/gh-pages).
+An example **Terraform** project using the chart can be found [here](https://github.com/iits-consulting/waf-cert-uploader-terraform).
 
 # Helm chart for the [WAF certificate uploader](https://github.com/iits-consulting/waf-cert-uploader)
 
-This documentation demonstrates how the WAF certificate uploader can be configured and deployed to manage certificates automatically in the WAF. The helm chart enables the automatic process of generating and attaching certificates to a given set of WAF domains, including their renewal process.
+This documentation demonstrates how the WAF certificate uploader can be configured and deployed to manage certificates automatically in the WAF. The **Helm Chart** enables the process of generating and attaching certificates to the WAF depending on a given Kubernetes TLS secret.
 
 ## Requirements
-In order to be able to use the webhook, a Kubernetes Cluster with the following components is needed:
-- **cert-manager** needed to generate a self signed certificate so that the Kubernetes API Server can communicate with the webhook via https.
-- **waf-cert-uploader helm chart** installs the webhook as well as its dependencies
-- **docker pull secret** a secret to be able to pull the waf-cert-uploader docker image from the given repository
-- **certificate secret** wich will trigger an admission review if it's changed
-- **Ingress Controller** e.h. traefik or nginx
+In order to be able to use the webhook, a **Kubernetes Cluster** with the following components is needed:
+- **cert-manager** needed to generate a self signed certificate so that the **Kubernetes API Server** can communicate with the webhook via https.
+- **waf-cert-uploader helm chart** installs the webhook as well as its dependencies.
+- **Docker Pull Secret** a secret to be able to pull the **waf-cert-uploader** docker image from the given repository.
+- **Certificate Secret** wich will trigger an admission review if it's changed.
+- **Ingress Controller** e.g. traefik or nginx.
 
 ## Helm chart configuration
 
@@ -34,7 +34,7 @@ The following table shows the most important configuration parameters of the hel
 | `image.pullPolicy`                          | **OPTIONAL** Image pull policy  |    `Always`                                             |
 
 ## Example Chart
-The helm chart can for example be deployed with terraform:
+The **Helm Chart** can for example be deployed with **Terraform**:
 
 ```tf
 resource "helm_release" "waf-cert-uploader" {
@@ -69,9 +69,9 @@ resource "helm_release" "waf-cert-uploader" {
 ```
 
 ## Deploy a Certificate
-After the helm chart is deployed, a TLS secret with the following annotation and label is needed:
-1. waf-cert-uploader.iits.tech/waf-domain-id: "any-domain-id"
-2. waf-cert-uploader.iits.tech/enabled: "true"
+After the **Helm Chart** is deployed, a TLS secret with the following annotation and label must be deployed to the cluster:
+1. `waf-cert-uploader.iits.tech/waf-domain-id: "any-domain-id"`
+2. `waf-cert-uploader.iits.tech/enabled: "true"`
 
 Example:
 ```yaml
