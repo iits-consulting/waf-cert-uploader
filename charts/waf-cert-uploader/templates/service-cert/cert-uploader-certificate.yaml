@@ -13,3 +13,5 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: {{ include "app.fullname" . }}
+  duration: 87660h # 10y
+  renewBefore: 24h

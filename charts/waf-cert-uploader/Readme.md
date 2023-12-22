@@ -13,3 +13,36 @@ data:
   tls.crt: LS0tLS1CRUdJ
   tls.key: LS0tLS1CRUdJ
 ```
+Example Cert:
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: try.waf-cert-uploader.iits.tech
+  namespace: waf
+spec:
+  secretTemplate:
+    labels:
+      waf-cert-uploader.iits.tech/enabled: "true"
+    annotations:
+      waf-cert-uploader.iits.tech/waf-domain-id: 419ace14a34946e8b8b022473d5eb1f9
+  secretName: try.waf-cert-uploader.iits.tech
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+      - jetstack
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - try.waf-cert-uploader.iits.tech
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+```
