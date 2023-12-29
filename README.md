@@ -10,13 +10,14 @@ An example **Terraform** project using the chart can be found [here](https://git
 This documentation demonstrates how the **WAF certificate uploader** can be configured and deployed to manage certificates automatically in the WAF. The **Helm Chart** enables the process of generating and attaching certificates to the WAF depending on a given Kubernetes TLS secret.
 
 ## Requirements
+### Kubernetes Cluster
 In order to be able to use the webhook, a **Kubernetes Cluster** with the following components is needed:
 - **cert-manager** - needed to generate a self signed certificate so that the **Kubernetes API Server** can communicate with the webhook via https.
 - **waf-cert-uploader helm chart** - installs the webhook as well as its dependencies.
 - **Docker Pull Secret** - a secret to be able to pull the **waf-cert-uploader** docker image from the given repository.
 - **Certificate Secret** - wich will trigger an admission review if it's changed.
 - **Ingress Controller** - e.g. traefik or nginx.
-
+### WAF Domain
 Additionally, a **WAF domain** must be created in **OTC**:
 - Select your OTC project.
 - Open the service menu and search for WAF.
@@ -27,7 +28,7 @@ Additionally, a **WAF domain** must be created in **OTC**:
 
   ![create WAF](screenshots/create-waf-domain.png)
 - Add the new CNAME record to your DNS provider, so it points the WAF IP address, click *Next* and then *Finish*, a default WAF Policy will be created.
-- From the domains menu click on the name of your WAF domain and then copy the *Domain ID*. It is needed in the helm chart configuration.
+- In the domains menu click on the name of your WAF domain and then copy the *Domain ID*.<br />It is needed for the [certificate deployment](#deploy-a-certificate) step.
 
 ## Helm chart configuration
 
@@ -131,10 +132,10 @@ spec:
 ```
 
 
-## Workflow explanation
+# Implementation details
 This section provides a comprehensive overview of the implementation details. In this scenario, the TLS domain certificate is automatically created and updated by *cert-manager*.
 
-### Creation of resources in the **Kubernetes Cluster (CCE)**
+## Creation of resources in the **Kubernetes Cluster (CCE)**
 
  - The **cert-manager**, responsible for automating the certification process.
      - The **letsencrypt cluster issuer**, tasked with issuing the CNAME record `my.domain.com`.
@@ -153,7 +154,7 @@ This section provides a comprehensive overview of the implementation details. In
  - **Traefik** (Ingress controller)
  - **Kyverno** (for default iits policies)
 
-### Certification Process
+## Certification Process
 - The cert-manager identifies the unsigned certificates and generates the objects necessary for the acme challenge process.
 - It then produces a key pair and stores the private key in the certificate secret named `my.domain.com`. The WAF domain ID and the match label from the mutating webhook configuration are also transferred to the secret.
 - The public key is sent to letsencrypt and a challenge token is received and stored in a file hosted by a small web application.
@@ -161,11 +162,11 @@ This section provides a comprehensive overview of the implementation details. In
 - letsencrypt attempts to request the token on port 80. If successful, it encrypts the public key with its private key and attaches this signature to the public key.
 - The cert-manager receives the certificate chain and stores it in the certificate secret.
 
-### Webhook Triggering
+## Webhook Triggering
 - With the occurrence of an update event on a secret with the match label from the webhook configuration, the API Server sends an admission review object to the webhook.
 - The admission review comprises the old secret without the certificate chain as well as the target secret with the certificate chain. The mutating webhook can now manipulate the secret and either accept or reject the admission review.
 
-### Certificate Uploading Process
+## Certificate Uploading Process
 - The webhook extracts the certificate content, WAF domain ID, and WAF certificate ID (if it exists initially) from the admission review object.
 - The certificate content undergoes SHA256 encryption to generate a unique identifier, which serves as the name for the certificate.
 - A request is made to the WAF API to retrieve all existing certificates, initiating a search process. If the certificate name already exists in the WAF, the process is terminated, and the admission review is accepted without any mutation.
