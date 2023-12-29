@@ -130,7 +130,7 @@ spec:
     name: letsencrypt
     kind: ClusterIssuer
 ```
-
+Now the cluster is set up. The webhook will upload the certificate to the WAF whenever the certificate secret is updated. The web server IP adress entry in the WAF will be duplicated to use HTTPS instead of HTTP for ingoing and outgoing requests. You should now be able to acces the WAF from your web browser via HTTPS.
 
 # Implementation details
 This section provides a comprehensive overview of the implementation details. In this scenario, the TLS domain certificate is automatically created and updated by *cert-manager*.
