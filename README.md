@@ -7,25 +7,27 @@ An example **Terraform** project using the chart can be found [here](https://git
 
 # Helm chart for the [WAF certificate uploader](https://github.com/iits-consulting/waf-cert-uploader)
 
-This documentation demonstrates how the WAF certificate uploader can be configured and deployed to manage certificates automatically in the WAF. The **Helm Chart** enables the process of generating and attaching certificates to the WAF depending on a given Kubernetes TLS secret.
+This documentation demonstrates how the **WAF certificate uploader** can be configured and deployed to manage certificates automatically in the WAF. The **Helm Chart** enables the process of generating and attaching certificates to the WAF depending on a given Kubernetes TLS secret.
 
 ## Requirements
 In order to be able to use the webhook, a **Kubernetes Cluster** with the following components is needed:
-- **cert-manager** needed to generate a self signed certificate so that the **Kubernetes API Server** can communicate with the webhook via https.
-- **waf-cert-uploader helm chart** installs the webhook as well as its dependencies.
-- **Docker Pull Secret** a secret to be able to pull the **waf-cert-uploader** docker image from the given repository.
-- **Certificate Secret** wich will trigger an admission review if it's changed.
-- **Ingress Controller** e.g. traefik or nginx.
+- **cert-manager** - needed to generate a self signed certificate so that the **Kubernetes API Server** can communicate with the webhook via https.
+- **waf-cert-uploader helm chart** - installs the webhook as well as its dependencies.
+- **Docker Pull Secret** - a secret to be able to pull the **waf-cert-uploader** docker image from the given repository.
+- **Certificate Secret** - wich will trigger an admission review if it's changed.
+- **Ingress Controller** - e.g. traefik or nginx.
 
-Additionally a **WAF domain** must be created in OTC:
+Additionally, a **WAF domain** must be created in **OTC**:
 - Select your OTC project.
 - Open the service menu and search for WAF.
 - Click on *Web Application Firewall*, then on *Domains* and then *Create Domain*.
-![open WAF menu](screenshots/open-waf-menu.png)
-- Specify your domain name and the IP address of your web server (don't create an HTTPS address, it will be added later automatically), click *Next*.
-![create WAF](screenshots/create-waf-domain.png)
-- Add the new CNAME record to your DNS provider, so it points the WAF IP address, click *Next* and then *Finish*, a default WAF Policy will be created
-- From the domains menu click on the name of your WAF domain and then copy the *Domain ID*
+
+  ![open WAF menu](screenshots/open-waf-menu.png)
+- Specify your domain name and the IP address of your web server (only allow HTTP!), then click *Next*.
+
+  ![create WAF](screenshots/create-waf-domain.png)
+- Add the new CNAME record to your DNS provider, so it points the WAF IP address, click *Next* and then *Finish*, a default WAF Policy will be created.
+- From the domains menu click on the name of your WAF domain and then copy the *Domain ID*. It is needed in the helm chart configuration.
 
 ## Helm chart configuration
 
@@ -38,7 +40,7 @@ The following table shows the most important configuration parameters of the hel
 | `otcAuth.region`                                   | **REQUIRED** Your project region                                                                  |  `eu-de`        |
 | `otcAuth.access_key`<br /> `otcAuth.secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC<br />(no username and password is needed)                 |                             |
 | `otcAuth.username`<br /> `otcAuth.password`          | IAM user credentials to be authenticated with OTC<br />(no AK/SK must be provided)     |                                             |
-| `imagePullSecrets`                          | **REQUIRED** List with names of docker pull secrets to inject into the deployment  |     <pre lang="yaml">[&#13;  {&#13;    name: "pull-secret-dockerhub" &#13;  }&#13;]</pre>                                                          |
+| `imagePullSecrets`                          | **REQUIRED** List with names of docker pull secrets to inject into the deployment  |     <pre lang="yaml">[&#13;  {&#13;    name: "pull-secret-github" &#13;  }&#13;]</pre>                                                          |
 | `image.repository`                          | **OPTIONAL** Repository, tag and pull policy of the webhook docker image  |   `docker.io/waf-cert-uploader`                                                       |
 | `image.tag`                          | **OPTIONAL** Repository, tag and pull policy of the webhook docker image  |    `latest`                                             |
 | `image.pullPolicy`                          | **OPTIONAL** Image pull policy  |    `Always`                                             |
