@@ -17,6 +17,16 @@ In order to be able to use the webhook, a **Kubernetes Cluster** with the follow
 - **Certificate Secret** wich will trigger an admission review if it's changed.
 - **Ingress Controller** e.g. traefik or nginx.
 
+Additionally a **WAF domain** must be created in OTC:
+- Select your OTC project.
+- Open the service menu and search for WAF.
+- Click on *Web Application Firewall*, then on *Domains* and then *Create Domain*.
+![open WAF menu](screenshots/open-waf-menu.png)
+- Specify your domain name and the IP address of your web server (don't create an HTTPS address, it will be added later automatically), click *Next*.
+![create WAF](screenshots/create-waf-domain.png)
+- Add the new CNAME record to your DNS provider, so it points the WAF IP address, click *Next* and then *Finish*, a default WAF Policy will be created
+- From the domains menu click on the name of your WAF domain and then copy the *Domain ID*
+
 ## Helm chart configuration
 
 The following table shows the most important configuration parameters of the helm chart:
