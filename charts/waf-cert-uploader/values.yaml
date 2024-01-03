@@ -1,7 +1,7 @@
 replicaCount: "2"
 
 image:
-  repository: "docker.io/waf-cert-uploader"
+  repository: "ghcr.io/waf-cert-uploader"
   pullPolicy: IfNotPresent
   tag: "latest"
 
@@ -93,10 +93,9 @@ health:
 onePodForEachNode: true
 
 otcAuth:
-  otcDomainName: ""
+  otcAccountName: ""
+  projectName: ""
   password: ""
-  tenantName: ""
   username: ""
   accessKey: ""
   secretKey: ""
-  region: ""

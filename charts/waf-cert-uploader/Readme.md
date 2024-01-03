@@ -46,3 +46,5 @@ spec:
     name: letsencrypt
     kind: ClusterIssuer
 ```
+
+You can find more details in the [project documentation](https://github.com/iits-consulting/waf-cert-uploader/blob/main/README.md)

@@ -13,12 +13,12 @@ import (
 )
 
 type CertificateSecret struct {
-	certName    string
-	tlsCert     string
-	tlsKey      string
-	domainName  string
-	wafDomainId string
-	certWafId   string
+	certName       string
+	tlsCert        string
+	tlsKey         string
+	otcAccountName string
+	wafDomainId    string
+	certWafId      string
 }
 
 func CreateOrUpdateCertificate(secret apiv1.Secret) (*string, error) {
@@ -129,7 +129,7 @@ func findCertInWaf(secret CertificateSecret) (*string, error) {
 
 func uploadNewCertificate(certSecret CertificateSecret) (*string, error) {
 	log.Println("uploading a new certificate to web application firewall...")
-	log.Println("certificate domain name: " + certSecret.domainName)
+	log.Println("certificate domain name: " + certSecret.otcAccountName)
 
 	createOpts := waf.CreateOpts{
 		Name:    certSecret.certName,
@@ -160,12 +160,12 @@ func getCertificateSecret(secret apiv1.Secret) CertificateSecret {
 	certHashString := getCertificateHash(tlsCertificate)
 
 	return CertificateSecret{
-		certName:    certHashString,
-		tlsCert:     trimmedCert,
-		tlsKey:      trimmedKey,
-		domainName:  secret.Annotations["cert-manager.io/certificate-name"],
-		certWafId:   certWafId,
-		wafDomainId: wafDomainId,
+		certName:       certHashString,
+		tlsCert:        trimmedCert,
+		tlsKey:         trimmedKey,
+		otcAccountName: secret.Annotations["cert-manager.io/certificate-name"],
+		certWafId:      certWafId,
+		wafDomainId:    wafDomainId,
 	}
 }
 

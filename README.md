@@ -12,11 +12,11 @@ This documentation demonstrates how the **WAF certificate uploader** can be conf
 ## Requirements
 ### Kubernetes Cluster
 In order to be able to use the webhook, a **Kubernetes Cluster** with the following components is needed:
-- **cert-manager** - needed to generate a self signed certificate so that the **Kubernetes API Server** can communicate with the webhook via https.
-- **waf-cert-uploader helm chart** - installs the webhook as well as its dependencies.
-- **Docker Pull Secret** - a secret to be able to pull the **waf-cert-uploader** docker image from the given repository.
-- **Certificate Secret** - wich will trigger an admission review if it's changed.
-- **Ingress Controller** - e.g. traefik or nginx.
+- [**cert-manager**](https://cert-manager.io/docs/installation/) - needed to generate a self signed certificate so that the **Kubernetes API Server** can communicate with the webhook via https.
+- [**waf-cert-uploader helm chart**](https://github.com/iits-consulting/waf-cert-uploader/tree/main/charts/waf-cert-uploader) - installs the webhook as well as its dependencies.
+- [**Docker Pull Secret**](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) - a secret to be able to pull the **waf-cert-uploader** docker image from the given repository.
+- [**Certificate Secret**](#deploy-a-certificate)- which will trigger an admission review if it's changed.
+- **Ingress Controller** - e.g. [**traefik**](https://traefik.io/traefik/) or [**nginx**](https://www.nginx.com/).
 ### WAF Domain
 Additionally, a **WAF domain** must be created in **OTC**:
 - Select your OTC project.
@@ -30,24 +30,51 @@ Additionally, a **WAF domain** must be created in **OTC**:
 - Add the new CNAME record to your DNS provider, so it points the WAF IP address, click *Next* and then *Finish*, a default WAF Policy will be created.
 - In the domains menu click on the name of your WAF domain and then copy the *Domain ID*.<br />It is needed for the [certificate deployment](#deploy-a-certificate) step.
 
+This can also be achieved via **Terraform**:
+
+```tf
+resource "opentelekomcloud_waf_domain_v1" "domain" {
+  for_each = {
+    "my.domain.com" = your-elastic-loadbalancer-public-ip
+  }
+  hostname = each.key
+  dynamic "server" {
+    for_each = toset(each.value)
+    content {
+      client_protocol = "HTTP"
+      server_protocol = "HTTP"
+      address         = your-web-server-ip-address-here
+      port            = 80
+    }
+  }
+  tls       = "TLS v1.2"
+  cipher    = "cipher_1"
+  policy_id = null
+  proxy     = false
+}
+```
+
 ## Helm chart configuration
 
 The following table shows the most important configuration parameters of the helm chart:
 
 | Variable Name                                  | Explanation                                                                                                | Example                        |
 |------------------------------------------------|------------------------------------------------------------------------------------------------------------|--------------------------------|
-| `otcAuth.otcDomainName`                              | **REQUIRED** The OTC account name                                                                  | `OTC-EU-DE-00000000`          |
-| `otcAuth.tenantName`                                | **REQUIRED** Your OTC project name                                                                          | `eu-de_your_project`          |
-| `otcAuth.region`                                   | **REQUIRED** Your project region                                                                  |  `eu-de`        |
-| `otcAuth.access_key`<br /> `otcAuth.secret_key`      | IAM Ak/Sk Pair to be authenticated with OTC<br />(no username and password is needed)                 |                             |
-| `otcAuth.username`<br /> `otcAuth.password`          | IAM user credentials to be authenticated with OTC<br />(no AK/SK must be provided)     |                                             |
+| `otcAuth.otcAccountName`                              | **REQUIRED** The OTC account name                                                                  | `OTC-EU-DE-00000000`          |
+| `otcAuth.projectName`                                | **REQUIRED** Your OTC project name                                                                          | `eu-de_your_project`          |
+| `otcAuth.username`<br /> `otcAuth.password`          | **REQUIRED** IAM user credentials to be authenticated with OTC     |                                             |
 | `imagePullSecrets`                          | **REQUIRED** List with names of docker pull secrets to inject into the deployment  |     <pre lang="yaml">[&#13;  {&#13;    name: "pull-secret-github" &#13;  }&#13;]</pre>                                                          |
 | `image.repository`                          | **OPTIONAL** Repository, tag and pull policy of the webhook docker image  |   `docker.io/waf-cert-uploader`                                                       |
 | `image.tag`                          | **OPTIONAL** Repository, tag and pull policy of the webhook docker image  |    `latest`                                             |
 | `image.pullPolicy`                          | **OPTIONAL** Image pull policy  |    `Always`                                             |
 
 ## Example Chart
-The **Helm Chart** can for example be deployed with **Terraform**:
+Deploy the **Helm Chart**. Go to `charts/waf-cert-uploader`, edit the `values.yaml` file and run:
+```
+helm install waf-cert-uploader .
+```
+
+The **Helm Chart** can also be deployed with **Terraform**:
 
 ```tf
 resource "helm_release" "waf-cert-uploader" {

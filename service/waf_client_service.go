@@ -7,18 +7,19 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
 	"log"
 	"os"
+	"strings"
 )
 
 var WafClient *golangsdk.ServiceClient
 
 type OtcAuthOptionsSecret struct {
-	username   string
-	password   string
-	accessKey  string
-	secretKey  string
-	domainName string
-	tenantName string
-	region     string
+	username       string
+	password       string
+	accessKey      string
+	secretKey      string
+	otcAccountName string
+	projectName    string
+	region         string
 }
 
 var authOptions OtcAuthOptionsSecret
@@ -86,8 +87,8 @@ func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
 		authOptsProvider = golangsdk.AKSKAuthOptions{
 			IdentityEndpoint: identityEndpoint,
 			Region:           authOptions.region,
-			ProjectName:      authOptions.tenantName,
-			Domain:           authOptions.domainName,
+			ProjectName:      authOptions.projectName,
+			Domain:           authOptions.otcAccountName,
 			AccessKey:        authOptions.accessKey,
 			SecretKey:        authOptions.secretKey,
 		}
@@ -98,8 +99,8 @@ func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
 		IdentityEndpoint: identityEndpoint,
 		Username:         authOptions.username,
 		Password:         authOptions.password,
-		DomainName:       authOptions.domainName,
-		TenantName:       authOptions.tenantName,
+		DomainName:       authOptions.otcAccountName,
+		TenantName:       authOptions.projectName,
 		AllowReauth:      true,
 	}
 	return &authOptsProvider, nil
@@ -114,22 +115,22 @@ var getAuthOptionsFromMountedSecret = func() error {
 	password, err := os.ReadFile(credentialsMountPath + "password")
 	accessKey, err := os.ReadFile(credentialsMountPath + "accessKey")
 	secretKey, err := os.ReadFile(credentialsMountPath + "secretKey")
-	domainName, err := os.ReadFile(credentialsMountPath + "domainName")
-	tenantName, err := os.ReadFile(credentialsMountPath + "tenantName")
-	region, err := os.ReadFile(credentialsMountPath + "region")
+	otcAccountName, err := os.ReadFile(credentialsMountPath + "otcAccountName")
+	projectName, err := os.ReadFile(credentialsMountPath + "projectName")
+	region := strings.Split(string(projectName), "_")[0]
 
 	if err != nil {
 		return err
 	}
 
 	authOptions = OtcAuthOptionsSecret{
-		username:   string(username),
-		password:   string(password),
-		accessKey:  string(accessKey),
-		secretKey:  string(secretKey),
-		domainName: string(domainName),
-		tenantName: string(tenantName),
-		region:     string(region),
+		username:       string(username),
+		password:       string(password),
+		accessKey:      string(accessKey),
+		secretKey:      string(secretKey),
+		otcAccountName: string(otcAccountName),
+		projectName:    string(projectName),
+		region:         region,
 	}
 	return nil
 }

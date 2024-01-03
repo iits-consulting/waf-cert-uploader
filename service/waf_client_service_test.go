@@ -16,13 +16,13 @@ func TestSetupOtcClient(t *testing.T) {
 
 	getAuthOptionsFromMountedSecret = func() error {
 		authOptions = OtcAuthOptionsSecret{
-			username:   "Robin",
-			password:   "abc123",
-			accessKey:  "",
-			secretKey:  "",
-			domainName: "asdf5455fd4",
-			tenantName: "qwer541235g3",
-			region:     "eu-de",
+			username:       "Robin",
+			password:       "abc123",
+			accessKey:      "",
+			secretKey:      "",
+			otcAccountName: "asdf5455fd4",
+			projectName:    "qwer541235g3",
+			region:         "eu-de",
 		}
 		return nil
 	}
