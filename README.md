@@ -52,28 +52,26 @@ The **Helm Chart** can for example be deployed with **Terraform**:
 ```tf
 resource "helm_release" "waf-cert-uploader" {
   name             = "waf-cert-uploader"
-  chart            = "path/to/chart/waf-cert-uploader-1.3.9.tgz"
+  chart            = "../../../charts/waf-cert-uploader-1.4.2.tgz"
   namespace        = "waf"
   create_namespace = true
   values = sensitive([
     yamlencode({
+      replicaCount = 1
       otcAuth = {
-        otcDomainName = "OTC-EU-DE-00000000"
-        username      = "my-username"
-        password      = "my-password"
-        tenantName    = "eu-de_my-project"
-        region        = "eu-de"
-        accessKey     = "my-ak-if-no-username-and-password"
-        secretKey     = "my-sk-if-no-username-and-password"
+        otcAccountName = "OTC-EU-DE-00000000"
+        projectName    = "eu-de_my-project"
+        username       = "my-username"
+        password       = "my-password"
       }
       image = {
-        repository = "docker.io/waf-cert-uploader"
+        repository = "ghcr.io/iits-consulting/waf-cert-uploader"
         pullPolicy = "Always"
         tag        = "latest"
       }
       imagePullSecrets = [
         {
-          name = "pull-secret-dockerhub"
+          name = "pull-secret-github"
         }
       ]
     })
