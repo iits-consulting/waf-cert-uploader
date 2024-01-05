@@ -19,7 +19,8 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: { }
+podAnnotations:
+  checksum/config: '{{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}'
 
 podSecurityContext:
 # fsGroup: 2000
@@ -97,5 +98,3 @@ otcAuth:
   projectName: ""
   password: ""
   username: ""
-  accessKey: ""
-  secretKey: ""
