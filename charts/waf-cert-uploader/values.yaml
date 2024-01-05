@@ -1,7 +1,7 @@
 replicaCount: "2"
 
 image:
-  repository: "ghcr.io/waf-cert-uploader"
+  repository: "ghcr.io/iits-consulting/waf-cert-uploader"
   pullPolicy: IfNotPresent
   tag: "latest"
 
