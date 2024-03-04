@@ -88,7 +88,6 @@ func getAuthOptions() (*golangsdk.AuthOptionsProvider, error) {
 			IdentityEndpoint: identityEndpoint,
 			Region:           authOptions.region,
 			ProjectName:      authOptions.projectName,
-			Domain:           authOptions.otcAccountName,
 			AccessKey:        authOptions.accessKey,
 			SecretKey:        authOptions.secretKey,
 		}

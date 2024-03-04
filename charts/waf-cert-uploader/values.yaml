@@ -98,3 +98,5 @@ otcAuth:
   projectName: ""
   password: ""
   username: ""
+  accessKey: ""
+  secretKey: ""
