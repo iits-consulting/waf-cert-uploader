@@ -1,9 +1,9 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ include "app.fullname" . }}-service-cert
+  name: {{ include "app.fullname" . }}-webhook-cert
 spec:
-  secretName: {{ .Values.secretNames.serviceCert }}
+  secretName: {{ include "app.fullname" . }}-webhook-cert
   commonName: {{.Release.Name}}.{{.Release.Namespace}}.svc
   dnsNames:
     - {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc.cluster.local
@@ -11,7 +11,7 @@ spec:
     - {{ include "app.fullname" . }}.{{.Release.Namespace}}
     - {{ include "app.fullname" . }}
   issuerRef:
-    kind: ClusterIssuer
-    name: {{ include "app.fullname" . }}
+    kind: Issuer
+    name: {{ include "app.fullname" . }}-webhook-issuer
   duration: 87660h # 10y
   renewBefore: 24h

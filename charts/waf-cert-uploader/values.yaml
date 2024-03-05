@@ -2,85 +2,21 @@ replicaCount: "2"
 
 image:
   repository: "ghcr.io/iits-consulting/waf-cert-uploader"
-  pullPolicy: IfNotPresent
-  tag: "latest"
-
-imagePullSecrets: [ ]
-nameOverride: ""
-fullnameOverride: ""
-serviceNameShort: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
-  annotations: { }
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
 
 podAnnotations:
-  checksum/config: '{{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}'
+  checksum/config: '{{ include (print $.Template.BasePath "/otc-credentials.yaml") . | sha256sum }}'
 
-podSecurityContext:
-# fsGroup: 2000
-
-securityContext:
-# capabilities:
-#   drop:
-#   - ALL
-# readOnlyRootFilesystem: true
-# runAsNonRoot: true
-# runAsUser: 1000
-
-serviceType: ClusterIP
-
-ports:
-  https:
-    port: &default_https_port 8443
-    protocol: TCP
-  http:
-    port: &default_http_port 8080
-    protocol: TCP
+port: 8080
 
 resources:
   requests:
     memory: 100M
     cpu: 10m
 
-nodeSelector: { }
-
-tolerations: [ ]
-
-secretNames:
-  serviceCert: &default_service_cert service-cert
-  credentials: &default_credentials otc-auth-credentials
-
-volumes:
-  - name: service-cert
-    secret:
-      secretName: *default_service_cert
-  - name: otc-auth-credentials
-    secret:
-      secretName: *default_credentials
-volumeMounts:
-  - name: service-cert
-    readOnly: true
-    mountPath: &default_cert_mount_path /etc/webhook/certs/
-  - name: otc-auth-credentials
-    readOnly: true
-    mountPath: &default_credentials_mount_path /etc/otc-auth-options/
-
-affinity: { }
-
-env:
-  CERT_MOUNT_PATH: *default_cert_mount_path
-  CREDENTIALS_MOUNT_PATH: *default_credentials_mount_path
-  HTTP_PORT: *default_http_port
-  HTTPS_PORT: *default_https_port
-
 health:
-  # override this if you want to change the healthcheck prefix otherwise it take serviceNameShort as the default
   prefix:
   liveness:
     path: "/health"
@@ -90,8 +26,6 @@ health:
     path: "/health"
     initialDelaySeconds: 5
     failureThreshold: 3
-
-onePodForEachNode: true
 
 otcAuth:
   otcAccountName: ""

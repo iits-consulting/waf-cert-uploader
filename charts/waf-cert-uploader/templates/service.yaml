@@ -1,17 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "app.fullname" . }}
+  name: {{ include "app.fullname" . }}-webhook
   labels:
     {{- include "app.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.serviceType }}
+  type: ClusterIP
   ports:
-    {{- range $name,$values := .Values.ports }}
-    - targetPort: {{$values.port}}
-      name: {{$name}}
-      protocol: {{ $values.protocol }}
-      port: {{$values.port}}
-    {{- end }}
+    - targetPort: {{ .Values.port }}
+      name: webhook
+      protocol: "TCP"
+      port: {{ .Values.port }}
   selector:
     {{- include "app.selectorLabels" . | nindent 4 }}

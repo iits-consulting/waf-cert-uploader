@@ -3,7 +3,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: {{ include "app.fullname" . }}
   annotations:
-    cert-manager.io/inject-ca-from: "{{.Release.Namespace}}/{{ include "app.fullname" . }}-service-cert"
+    cert-manager.io/inject-ca-from: "{{.Release.Namespace}}/{{ include "app.fullname" . }}-webhook-cert"
 webhooks:
   - name: {{ include "app.fullname" . }}.{{.Release.Namespace}}.svc
     admissionReviewVersions:
@@ -11,10 +11,10 @@ webhooks:
     sideEffects: None
     clientConfig:
       service:
-        name: {{ include "app.fullname" . }}
+        name: {{ include "app.fullname" . }}-webhook
         namespace: {{.Release.Namespace}}
         path: "/upload-cert-to-waf"
-        port: {{ .Values.ports.https.port }}
+        port: {{ .Values.port }}
     objectSelector:
       matchLabels:
         waf-cert-uploader.iits.tech/enabled: "true"
