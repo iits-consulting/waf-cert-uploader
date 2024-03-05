@@ -41,12 +41,12 @@ jobs:
               dep ensure
           fi
       - name: Build
-        run: go build -v -o otc-auth .
+        run: go build -v -o waf-cert-uploader
       - name: Upload the built binary executable for testing
         uses: actions/upload-artifact@v2
         with:
           name: build
-          path: otc-auth
+          path: waf-cert-uploader
   test:
     needs: build
     runs-on: ubuntu-latest

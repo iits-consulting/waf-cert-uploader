@@ -11,7 +11,6 @@ import (
 )
 
 type ServerParameters struct {
-	port     int    // webhook server port
 	certFile string // path to the x509 certificate for https
 	keyFile  string // path to the x509 private key matching `CertFile`
 }

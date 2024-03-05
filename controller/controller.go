@@ -54,11 +54,11 @@ func HandleUploadCertToWaf(writer http.ResponseWriter, httpRequest *http.Request
 		return
 	}
 
-	writeResponseObjectToConnection(writer, err, *responseBytes)
+	writeResponseObjectToConnection(writer, *responseBytes)
 }
 
-func writeResponseObjectToConnection(writer http.ResponseWriter, err error, responseBytes []byte) {
-	_, err = writer.Write(responseBytes)
+func writeResponseObjectToConnection(writer http.ResponseWriter, responseBytes []byte) {
+	_, err := writer.Write(responseBytes)
 	if err != nil {
 		log.Println("http reply failed", err)
 	}

@@ -111,11 +111,29 @@ var getAuthOptionsFromMountedSecret = func() error {
 		return errors.New("environment variable for the credentials mount path was not found")
 	}
 	username, err := os.ReadFile(credentialsMountPath + "username")
+	if err != nil {
+		return err
+	}
 	password, err := os.ReadFile(credentialsMountPath + "password")
+	if err != nil {
+		return err
+	}
 	accessKey, err := os.ReadFile(credentialsMountPath + "accessKey")
+	if err != nil {
+		return err
+	}
 	secretKey, err := os.ReadFile(credentialsMountPath + "secretKey")
+	if err != nil {
+		return err
+	}
 	otcAccountName, err := os.ReadFile(credentialsMountPath + "otcAccountName")
+	if err != nil {
+		return err
+	}
 	projectName, err := os.ReadFile(credentialsMountPath + "projectName")
+	if err != nil {
+		return err
+	}
 	region := strings.Split(string(projectName), "_")[0]
 
 	if err != nil {
