@@ -40,29 +40,22 @@ func registerHttpControllers() {
 }
 
 func setupHttpServers() {
-	httpPort, httpsPort, err := lookupPorts()
+	httpsPort, err := lookupPort()
 	if err != nil {
 		return
 	}
-	go func() {
-		err = http.ListenAndServe(":"+*httpPort, nil)
-		if err != nil {
-			log.Println("http server failed: ", err)
-		}
-	}()
 	err = http.ListenAndServeTLS(":"+*httpsPort, parameters.certFile, parameters.keyFile, nil)
 	if err != nil {
 		log.Println("https server failed: ", err)
 	}
 }
 
-func lookupPorts() (*string, *string, error) {
-	httpPort, httpFound := os.LookupEnv("HTTP_PORT")
-	httpsPort, httpsFound := os.LookupEnv("HTTPS_PORT")
-	if !(httpFound && httpsFound) {
-		return nil, nil, errors.New("environment variables for http and https ports were not set")
+func lookupPort() (*string, error) {
+	httpsPort, httpsFound := os.LookupEnv("PORT")
+	if !httpsFound {
+		return nil, errors.New("environment variable for https port is not set")
 	}
-	return &httpPort, &httpsPort, nil
+	return &httpsPort, nil
 }
 
 func flagWebhookParameters() error {
